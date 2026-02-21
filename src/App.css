@@ -44,9 +44,12 @@
   }
 }
 
-/* مش ضرورية، بس سيبتها من غير تغيير */
+
 .card {
   padding: 2em;
+    cursor: pointer;
+  text-decoration: none;
+  color: white;
 }
 
 .read-the-docs {

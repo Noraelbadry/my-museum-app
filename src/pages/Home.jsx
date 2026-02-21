@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { artifacts } from "../data";
 import ArtifactCard from "../components/ArtifactCard";
-
+import { Link } from "react-router-dom";
 export default function Home() {
   const [selected, setSelected] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,9 +16,9 @@ export default function Home() {
     zIndex: 1,
     width: "100%",
     color: "white",
-    padding: "0 20px",
+    padding: "20px",
     textAlign: "center",
-    fontWeight: "700",
+    fontWeight: "1000",
     letterSpacing: "0.5px",
      boxSizing: "border-box",
   };
@@ -26,7 +26,7 @@ export default function Home() {
   const pageStyle = {
     width: "100vw",
     minHeight: "100vh",
-    margin: 0,
+    margin: 1,
     padding: "20px",
     display: "flex",
     flexDirection: "column",
@@ -46,7 +46,7 @@ export default function Home() {
   return (
     <div style={pageStyle}>
       <div style={contentStyle}>
-        <h1 style={{ fontSize: "3.5rem", marginBottom: "20px" }}>
+        <h1 style={{ fontSize: "3.1rem", marginBottom: "50px" }}>
           Welcome to the Museum Experience
         </h1>
 
@@ -94,6 +94,10 @@ export default function Home() {
                 zIndex: hoveredId === artifact.id ? 2 : 1,
               }}
             >
+              <Link to="/Akhenaten-details" className="artifact-card">
+            <Link to="/Nefertit-details" className="artifact-card">
+</Link>
+            </Link>
               <ArtifactCard artifact={artifact} onClick={handleClick} />
             </div>
           ))}

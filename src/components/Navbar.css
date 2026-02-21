@@ -1,22 +1,36 @@
 .navbar {
-  background: #0d0d0d;
-  color: white;
-  padding: 15px 25px;
+  background: rgba(0, 0, 0, 0.1); 
+  color: black;
+  padding: 10px 25px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 50px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100%;
+ backdrop-filter: blur(1px); 
+  z-index: 100;
+}
+.logo {
+  font-size: 20px;
+  font-weight: bold;
 }
 
-.logo {
-  font-size: 22px;
-  font-weight: bold;
+.logo-img {
+  height: 180px;    
+  width: auto;
+  object-fit: contain;
+  z-index: 1;
 }
 
 .nav-links a {
   margin-left: 20px;
   color: white;
   text-decoration: none;
-  font-size: 16px;
+  font-size: 18px;
+   z-index: 9999;
 }
 
 .nav-links a:hover {
