@@ -2,57 +2,70 @@ export const artifacts = [
   {
     id: 1,
     name: "Akhenaten",
-    kingdom: "New Kigdom",
-    material: "Painted Limestone",
+    kingdom: "New Kingdom",
+    material: "Sandstone",
     image: "/images/statue1.jpeg",
+    modelPath: "/models/akhenaten.glb",
 
   },
   {
     id: 2,
     name: "Khafre",
-    kingdom: "New Kingdom",
-    material: "Marble",
+    kingdom: "Old Kingdom",
+    material: "Anorthosite Gneiss",
     image: "/images/nefertiti.webp",
+        modelPath: "/models/khafre.glb",
+
 
   },
     {
     id: 3,
     name: "High Priest Ramessesnakht",
     kingdom: "New Kingdom",
-    material: "Marble",
+    material: "Granite",
     image: "/images/nefertiti.webp",
+        modelPath: "/models/ramessesnakht.glb",
+
 
   },
     {
     id: 4,
     name: "God Serapis",
-    kingdom: "New Kingdom",
-    material: "Marble",
+    kingdom: "Greco-Roman Period",
+    material: "Egyptian Alabaster",
     image: "/images/nefertiti.webp",
+        modelPath: "/models/godserapis.glb",
+
 
   },
     {
     id: 5,
     name: "Hor Son Of Hor",
-    kingdom: "New Kingdom",
-    material: "Marble",
+    kingdom: "Ptolemaic Period",
+    material: "Granite",
     image: "/images/nefertiti.webp",
+        modelPath: "/models/horsonhor.glb",
+
 
   },
   {
     id: 6,
     name: "Scribe Statue",
-    kingdom: "New Kingdom",
-    material: "Marble",
+    kingdom: "Middle Kingdom",
+    material: "Limestone",
     image: "/images/nefertiti.webp",
+        modelPath: "/models/scribestatue.glb",
+
 
   },
   {
     id: 7,
     name: "Khakaureseneb",
-    kingdom: "New Kingdom",
-    material: "Marble",
+    kingdom: "Middle Kingdom",
+    material: "Quartzite",
     image: "/images/nefertiti.webp",
+        modelPath: "/models/0.glb",
+
 
   }
 ];

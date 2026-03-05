@@ -15,7 +15,7 @@ export default function Home() {
   };
 
   // مصفوفة الممالك لتوليد الأزرار ديناميكياً وتجنب أخطاء الكتابة
-  const kingdoms = ["all", "Old Kingdom", "Middle Kingdom", "New Kingdom"];
+  const kingdoms = ["all", "Old Kingdom", "Middle Kingdom", "New Kingdom", "Greco-Roman Period", "Ptolemaic Period"];
 
   // منطق الفلترة
   const filteredArtifacts = artifacts.filter((artifact) => {
@@ -101,37 +101,40 @@ export default function Home() {
           ))}
         </div>
 
-        {/* شبكة العرض */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            gap: "25px",
-            padding: "20px",
-          }}
+{/* شبكة العرض المعدلة */}
+<div
+  style={{
+    display: "grid",
+    // هنا بنقوله يعمل 4 أعمدة قد بعض بالظبط
+    gridTemplateColumns: "repeat(3, 1fr)", 
+    gap: "30px",
+    padding: "20px",
+    width: "80%", // عشان نضمن مساحة كافية للـ 4 كروت
+    maxWidth: "1200px",
+    margin: "0 auto", // سنترة الشبكة في نص الصفحة
+  }}
         >
-          {filteredArtifacts.map((artifact) => (
-            <Link
-              key={artifact.id}
-              to={`/artifact/${artifact.id}`}
-              style={{ textDecoration: "none" }}
-            >
-              <div
-                onMouseEnter={() => setHoveredId(artifact.id)}
-                onMouseLeave={() => setHoveredId(null)}
-                style={{
-                  transform: hoveredId === artifact.id ? "scale(1.08)" : "scale(1)",
-                  transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-                  filter: hoveredId && hoveredId !== artifact.id ? "blur(3px) grayscale(50%)" : "none",
-                  zIndex: hoveredId === artifact.id ? 2 : 1,
-                }}
-              >
-                <ArtifactCard artifact={artifact} onClick={handleClick} />
-              </div>
-            </Link>
-          ))}
-        </div>
+{filteredArtifacts.map((artifact) => (
+    <Link
+      key={artifact.id}
+      to={`/artifact/${artifact.id}`}
+      style={{ textDecoration: "none" }}
+    >
+      <div
+        onMouseEnter={() => setHoveredId(artifact.id)}
+        onMouseLeave={() => setHoveredId(null)}
+        style={{
+          transform: hoveredId === artifact.id ? "scale(1.08)" : "scale(1)",
+          transition: "all 0.4s ease",
+          filter: hoveredId && hoveredId !== artifact.id ? "blur(3px)" : "none",
+          zIndex: hoveredId === artifact.id ? 2 : 1,
+        }}
+      >
+        <ArtifactCard artifact={artifact} onClick={handleClick} />
+      </div>
+    </Link>
+  ))}
+</div>
 
         {/* رسالة في حال عدم وجود نتائج */}
         {filteredArtifacts.length === 0 && (
