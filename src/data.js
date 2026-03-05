@@ -64,7 +64,7 @@ export const artifacts = [
     kingdom: "Middle Kingdom",
     material: "Quartzite",
     image: "/images/nefertiti.webp",
-        modelPath: "/models/0.glb",
+        modelPath: "/models/Khakaureseneb.glb",
 
 
   }
