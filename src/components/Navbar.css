@@ -9,7 +9,7 @@
   justify-content: center;
   align-items: center;
   transition: all 0.4s ease;
-  background: rgba(0, 0, 0, 0.2); /* خلفية زجاجية */
+  background: rgba(0, 0, 0, 0.2); 
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   border-bottom: 1px solid rgba(255, 215, 0, 0.2); 
@@ -36,7 +36,7 @@
   align-items: center;
 }
 
-/* --- الرجوع للأصل: الكلمة والخط والضوء --- */
+
 .nav-item {
   color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
@@ -48,14 +48,14 @@
   transition: all 0.3s ease;
 }
 
-/* التوهج الأصفر للكلمة */
+/* اللمعان الأصفر للكلمة */
 .nav-item:hover, 
 .nav-item.active {
   color: gold;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.7); /* الضوء الأصفر */
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.7); 
 }
 
-/* الخط الذهبي اللي بيتحرك تحت الكلام */
+
 .nav-item::after {
   content: '';
   position: absolute;
@@ -66,7 +66,7 @@
   background: gold;
   transition: all 0.3s ease;
   transform: translateX(-50%);
-  box-shadow: 0 0 10px gold; /* ضوء الخط نفسه */
+  box-shadow: 0 0 10px gold;
 }
 
 .nav-item:hover::after, 
@@ -74,26 +74,26 @@
   width: 100%;
 }
 
-/* --- تعديلات الموبايل (عشان الحاجات دي متختفيش) --- */
+
 @media (max-width: 768px) {
   .navbar {
     height: 70px;
   }
 
   .logo-img {
-    height: 60px; /* صغرنا اللوجو بس عشان يسيب مكان للخط والضوء */
+    height: 60px; 
   }
 
   .nav-links {
-    gap: 15px; /* مسافة كافية عشان الكلمات متلمسش بعض */
+    gap: 15px; 
   }
 
   .nav-item {
-    font-size: 0.7rem; /* خط أصغر بس لسه بينور */
+    font-size: 0.7rem; 
     letter-spacing: 1px;
   }
 
   .nav-item::after {
-    bottom: -5px; /* رفعنا الخط شوية عشان الزحمة */
+    bottom: -5px; 
   }
 }

@@ -16,7 +16,7 @@ export default function ArtifactDetails() {
 
   if (!artifact) return <div style={{ color: "white", textAlign: "center", padding: "100px" }}>Loading...</div>;
 
-  const storyText = artifact.description || "Ancient Egypt was a civilization of ancient North Africa, concentrated along the lower reaches of the Nile River. This artifact represents the dignity and craftsmanship of that era.";
+  const storyText = artifact.description || "Ancient Egypt was a civilization of ancient North Africa.";
   
   const words = storyText.split(" ");
 
@@ -32,13 +32,13 @@ export default function ArtifactDetails() {
       alignItems: "flex-start"
     }}>
       
-      {/* الجزء الشمال: النص السردي */}
+    
       <div style={{ 
         flex: "1", 
         height: "80vh", 
         overflowY: "auto", 
         paddingRight: "30px",
-        textAlign: "justify",
+        textAlign: "left",
         scrollbarWidth: "none" 
       }}>
         <h1 style={{ fontSize: "3rem", color: "gold", marginBottom: "30px", fontWeight: "900" }}>
@@ -74,12 +74,12 @@ export default function ArtifactDetails() {
         </div>
       </div>
 
-      {/* الجزء اليمين: الموديل الثلاثي الأبعاد */}
+    
       <div style={{ 
         flex: "1", 
         position: "sticky", 
         top: "120px",
-        height: "70vh",
+        height: "130vh",
         display: "flex",
         flexDirection: "column",
         alignItems: "center"
@@ -95,7 +95,7 @@ export default function ArtifactDetails() {
           justifyContent: "center",
           alignItems: "center",
           boxShadow: "0 0 50px rgba(0,0,0,0.5)",
-          position: "relative" // عشان زرار الـ AR يتسنتّر صح
+          position: "relative" 
         }}>
           <model-viewer
   src={artifact.modelPath}
@@ -108,16 +108,16 @@ export default function ArtifactDetails() {
   exposure="1.2"
   style={{ width: "90%", height: "90%", position: "relative" }} 
 >
-  {/* الزرار متعدل عشان يظهر فوق أي حاجة */}
+
   <button
     slot="ar-button"
     style={{
       display: "block",
-      backgroundColor: "#FFD700", // لون ذهبي فاقع عشان يبان
+      backgroundColor: "#FFD700", 
       color: "#000",
-      borderRadius: "30px",
+      borderRadius: "20px",
       border: "none",
-      padding: "12px 24px",
+      padding: "5px 10px",
       position: "absolute",
       bottom: "20px",
       left: "50%",
