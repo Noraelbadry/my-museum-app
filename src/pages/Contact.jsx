@@ -31,109 +31,167 @@ export default function Contact() {
 
     .contact-box {
       width: 100%;
-      max-width: 550px;
-      padding: 50px 40px;
-      background-color: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 28px;
-      border: 1px solid rgba(255, 215, 0, 0.3);
-      box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 0 15px rgba(255,215,0,0.05);
+      max-width: 520px;
+      padding: 52px 44px;
+      background: linear-gradient(160deg, rgba(20,15,5,0.95) 0%, rgba(10,8,2,0.98) 100%);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border-radius: 24px;
+      border: 1px solid rgba(212,175,90,0.35);
+      box-shadow:
+        0 0 0 1px rgba(212,175,90,0.08),
+        0 30px 80px rgba(0,0,0,0.8),
+        inset 0 1px 0 rgba(212,175,90,0.2),
+        inset 0 -1px 0 rgba(212,175,90,0.08);
       display: flex;
       flex-direction: column;
-      gap: 25px;
-      text-align: center;
+      gap: 28px;
+      position: relative;
+      overflow: hidden;
       box-sizing: border-box;
+    }
+
+    .contact-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 60px; height: 60px;
+      border-top: 1.5px solid #d4af5a;
+      border-left: 1.5px solid #d4af5a;
+      border-radius: 24px 0 0 0;
+    }
+
+    .contact-box::after {
+      content: '';
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 60px; height: 60px;
+      border-bottom: 1.5px solid #d4af5a;
+      border-right: 1.5px solid #d4af5a;
+      border-radius: 0 0 24px 0;
+    }
+
+    .contact-header {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
     }
 
     .contact-title {
       font-family: 'Cinzel', serif;
-      font-size: 2.5rem;
+      font-size: 2rem;
       font-weight: 700;
-      color: gold;
-      margin: 0 0 10px;
-      letter-spacing: 2px;
+      color: transparent;
+      background: linear-gradient(180deg, #f5e49c 0%, #d4af5a 50%, #a07830 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      margin: 0;
+    }
+
+    .contact-ornament {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .orn-line {
+      height: 1px;
+      width: 50px;
+      background: linear-gradient(to right, transparent, #d4af5a);
+    }
+
+    .orn-line.r {
+      background: linear-gradient(to left, transparent, #d4af5a);
+    }
+
+    .orn-diamond {
+      width: 5px; height: 5px;
+      background: #d4af5a;
+      transform: rotate(45deg);
     }
 
     .contact-subtitle {
-      color: rgba(255,255,255,0.6);
       font-family: 'Lato', sans-serif;
-      font-size: 0.9rem;
-      margin-bottom: 20px;
-      letter-spacing: 1px;
+      font-weight: 300;
+      font-size: 0.78rem;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      margin: 0;
     }
 
     .contact-form {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 18px;
     }
 
     .input-group {
       display: flex;
       flex-direction: column;
-      text-align: left;
-      gap: 8px;
+      gap: 7px;
     }
 
     .input-label {
-      color: gold;
       font-family: 'Lato', sans-serif;
-      font-size: 0.8rem;
+      font-size: 0.7rem;
       font-weight: 700;
-      margin-left: 5px;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      color: #d4af5a;
+      margin-left: 4px;
     }
 
     .contact-input {
-      padding: 16px 20px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background-color: rgba(255,255,255,0.03);
+      padding: 14px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(212,175,90,0.15);
+      background: rgba(255,255,255,0.03);
       color: #fff;
       outline: none;
-      font-size: 1rem;
+      font-size: 16px;
       font-family: 'Lato', sans-serif;
-      transition: border 0.3s ease;
+      font-weight: 300;
+      transition: border 0.3s ease, background 0.3s ease;
       width: 100%;
       box-sizing: border-box;
     }
 
     .contact-input:focus {
-      border: 1px solid gold;
+      border: 1px solid rgba(212,175,90,0.6);
+      background: rgba(212,175,90,0.04);
     }
 
-    .contact-input::placeholder {
-      color: rgba(255,255,255,0.3);
-    }
+    .contact-input::placeholder { color: rgba(255,255,255,0.2); }
 
     .contact-btn {
-      margin-top: 15px;
-      padding: 16px;
+      margin-top: 8px;
+      padding: 15px;
       border-radius: 50px;
-      border: 1px solid gold;
+      border: 1px solid rgba(212,175,90,0.5);
       cursor: pointer;
-      background-color: transparent;
-      color: gold;
+      background: transparent;
+      color: #d4af5a;
       font-family: 'Cinzel', serif;
       font-weight: 600;
-      font-size: 1rem;
+      font-size: 0.85rem;
       text-transform: uppercase;
-      letter-spacing: 3px;
+      letter-spacing: 0.25em;
       transition: all 0.4s ease;
       width: 100%;
     }
 
     .contact-btn:hover {
-      background-color: gold;
-      color: black;
-      box-shadow: 0 0 25px rgba(255,215,0,0.4);
+      background: linear-gradient(135deg, #d4af5a, #f0d080);
+      color: #1a1200;
+      border-color: transparent;
+      box-shadow: 0 0 30px rgba(212,175,90,0.35);
     }
 
-    /* Mobile fixes */
     @media (max-width: 480px) {
       .contact-box {
         padding: 36px 20px;
@@ -141,19 +199,12 @@ export default function Contact() {
       }
 
       .contact-title {
-        font-size: 1.8rem;
-        letter-spacing: 1px;
-      }
-
-      .contact-input {
-        font-size: 16px; /* منع zoom على iOS */
-        padding: 14px 16px;
+        font-size: 1.6rem;
       }
 
       .contact-btn {
-        font-size: 0.85rem;
-        letter-spacing: 2px;
-        padding: 14px;
+        font-size: 0.78rem;
+        letter-spacing: 0.15em;
       }
     }
   `;
@@ -163,8 +214,16 @@ export default function Contact() {
       <style>{styles}</style>
       <div className="contact-page">
         <div className="contact-box">
-          <h1 className="contact-title">Contact Us</h1>
-          <p className="contact-subtitle">Reach out to the keepers of history</p>
+
+          <div className="contact-header">
+            <h1 className="contact-title">Contact Us</h1>
+            <div className="contact-ornament">
+              <div className="orn-line"></div>
+              <div className="orn-diamond"></div>
+              <div className="orn-line r"></div>
+            </div>
+            <p className="contact-subtitle">Reach out to the keepers of history</p>
+          </div>
 
           <form className="contact-form" onSubmit={sendEmail}>
             <div className="input-group">
@@ -186,6 +245,7 @@ export default function Contact() {
               {sending ? "Sending..." : "Send Message"}
             </button>
           </form>
+
         </div>
       </div>
     </>
