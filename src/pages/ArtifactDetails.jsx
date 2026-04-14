@@ -1,19 +1,12 @@
 import { useParams } from "react-router-dom";
 import { artifacts } from "../data";
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import "@google/model-viewer";
 
 export default function ArtifactDetails() {
   const { id } = useParams();
   const artifact = artifacts.find((item) => item.id.toString() === id);
-
-  const audioRef = useRef(null);
-  const [currentTime, setCurrentTime] = useState(0);
   const modelRef = useRef(null);
-
-  const handleTimeUpdate = () => {
-    setCurrentTime(audioRef.current.currentTime);
-  };
 
   const handleARClick = () => {
     if (modelRef.current) {
@@ -22,9 +15,6 @@ export default function ArtifactDetails() {
   };
 
   if (!artifact) return <div style={{ color: "white", textAlign: "center", padding: "100px" }}>Loading...</div>;
-
-  const storyText = artifact.description || "Ancient Egypt was a civilization of ancient North Africa.";
-  const words = storyText.split(" ");
 
   const styles = `
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
@@ -35,32 +25,13 @@ export default function ArtifactDetails() {
       color: white;
       padding: 120px 5% 60px;
       display: flex;
-      gap: 50px;
-      flex-direction: row;
+      justify-content: center;
       align-items: flex-start;
     }
 
-    .detail-text {
-      flex: 1;
-      height: 80vh;
-      overflow-y: auto;
-      padding-right: 30px;
-      text-align: left;
-      scrollbar-width: none;
-    }
-
-    .detail-text::-webkit-scrollbar { display: none; }
-
-    .detail-title {
-      font-family: 'Cinzel', serif;
-      font-size: 3rem;
-      color: gold;
-      margin-bottom: 30px;
-      font-weight: 700;
-    }
-
     .detail-model-col {
-      flex: 1;
+      width: 100%;
+      max-width: 700px;
       position: sticky;
       top: 120px;
       height: 80vh;
@@ -83,6 +54,15 @@ export default function ArtifactDetails() {
       align-items: center;
       box-shadow: 0 0 50px rgba(0,0,0,0.5);
       overflow: hidden;
+    }
+
+    .detail-title {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      color: gold;
+      font-weight: 700;
+      text-align: center;
+      margin: 0;
     }
 
     .detail-meta {
@@ -120,20 +100,7 @@ export default function ArtifactDetails() {
 
     @media (max-width: 768px) {
       .detail-page {
-        flex-direction: column;
         padding: 100px 5% 60px;
-        gap: 30px;
-      }
-
-      .detail-text {
-        height: auto;
-        padding-right: 0;
-        width: 100%;
-      }
-
-      .detail-title {
-        font-size: 1.8rem;
-        margin-bottom: 20px;
       }
 
       .detail-model-col {
@@ -160,6 +127,10 @@ export default function ArtifactDetails() {
         margin-top: 8px;
         font-size: 0.85rem;
       }
+
+      .detail-title {
+        font-size: 1.5rem;
+      }
     }
   `;
 
@@ -168,41 +139,9 @@ export default function ArtifactDetails() {
       <style>{styles}</style>
       <div className="detail-page">
 
-        {/* TEXT SIDE */}
-        <div className="detail-text">
+        <div className="detail-model-col">
           <h1 className="detail-title">{artifact.name}</h1>
 
-          <audio
-            ref={audioRef}
-            src={artifact.audioPath}
-            onTimeUpdate={handleTimeUpdate}
-            controls
-            style={{ marginBottom: "20px", width: "100%", opacity: 0.5 }}
-          />
-
-          <div style={{ fontSize: "1.5rem", lineHeight: "1.8", fontWeight: "700" }}>
-            {words.map((word, index) => {
-              const isActive = currentTime > index * 0.4;
-              return (
-                <span
-                  key={index}
-                  style={{
-                    color: isActive ? "gold" : "rgba(255,255,255,0.15)",
-                    textShadow: isActive ? "0 0 15px gold" : "none",
-                    transition: "all 0.4s ease",
-                    display: "inline-block",
-                    marginRight: "10px",
-                  }}
-                >
-                  {word}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* MODEL SIDE */}
-        <div className="detail-model-col">
           <div className="detail-model-box">
             <model-viewer
               ref={modelRef}
@@ -218,7 +157,7 @@ export default function ArtifactDetails() {
             />
           </div>
 
-          <div className="detail-model-footer" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "14px", width: "100%" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "14px", width: "100%" }}>
             <button className="ar-btn" onClick={handleARClick}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#1a1200" strokeWidth="1.8" strokeLinejoin="round"/>

@@ -267,9 +267,9 @@ export default function Home() {
                 onMouseEnter={() => setHoveredId(artifact.id)}
                 onMouseLeave={() => setHoveredId(null)}
                 style={{
-                  filter: hoveredId && hoveredId !== artifact.id ? "brightness(0.35) blur(2px)" : "none",
-                  transition: "filter 0.4s ease",
-                }}
+  opacity: hoveredId && hoveredId !== artifact.id ? 0.3 : 1,
+  transition: "opacity 0.3s ease",
+}}
               >
                 <ArtifactCard artifact={artifact} />
               </div>
