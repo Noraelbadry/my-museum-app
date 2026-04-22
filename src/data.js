@@ -26,7 +26,7 @@ export const artifacts = [
     kingdom: "New Kingdom",
     material: "Granite",
     image: "/images/High_Priest_Ramessesnakht.webp",
-        modelPath: "/models/ramessesnakht.glb",
+        modelPath: "/models/ramessesnakhtv2.glb",
         
 
 
@@ -47,7 +47,7 @@ export const artifacts = [
     kingdom: "Ptolemaic Period",
     material: "Granite",
     image: "/images/Hor_Son_Hor.webp",
-        modelPath: "/models/horsonhor.glb",
+        modelPath: "/models/horsonhorv2.glb",
 
 
   },
