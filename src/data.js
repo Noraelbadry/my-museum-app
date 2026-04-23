@@ -16,7 +16,7 @@ export const artifacts = [
     kingdom: "Old Kingdom",
     material: "Anorthosite Gneiss",
     image: "/images/Khafre.webp",
-        modelPath: "/models/khafre.glb",
+        modelPath: "/models/khafrev2.glb",
 
 
   },
@@ -37,7 +37,7 @@ export const artifacts = [
     kingdom: "Greco-Roman Period",
     material: "Egyptian Alabaster",
     image: "/images/God_Serapis.webp",
-        modelPath: "/models/godserapis.glb",
+        modelPath: "/models/godserapisv2.glb",
 
 
   },
@@ -57,7 +57,7 @@ export const artifacts = [
     kingdom: "Middle Kingdom",
     material: "Limestone",
     image: "/images/Scribe_Statue.webp",
-        modelPath: "/models/scribestatue.glb",
+        modelPath: "/models/scribestatuev2.glb",
 
 
   },
@@ -67,7 +67,7 @@ export const artifacts = [
     kingdom: "Middle Kingdom",
     material: "Quartzite",
     image: "/images/Khakaureseneb.webp",
-        modelPath: "/models/Khakaureseneb.glb",
+        modelPath: "/models/Khakauresenebv2.glb",
 
 
   }

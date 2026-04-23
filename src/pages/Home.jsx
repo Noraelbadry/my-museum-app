@@ -222,7 +222,7 @@ export default function Home() {
       <div className="home-page">
 
         <div className="hero">
-          <div className="hero-eyebrow">· Cairo, Egypt </div>
+          <div className="hero-eyebrow">· Cairo, Egypt · </div>
           <h1 className="hero-title">
             The Royal <span>Egyptian</span> Gallery
           </h1>
