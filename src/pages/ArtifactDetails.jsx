@@ -50,7 +50,7 @@ function HotspotDot({ hotspot, isActive, onSelect }) {
       <meshBasicMaterial
         color="#d4af5a"
         transparent
-        opacity={isActive || hovered ? 0.6 : 0.15}
+        opacity={isActive || hovered ? 0.2 : 0.15}
       />
 
       {/* Ring خارجي */}
@@ -59,7 +59,7 @@ function HotspotDot({ hotspot, isActive, onSelect }) {
         <meshBasicMaterial
           color="#d4af5a"
           transparent
-          opacity={isActive ? 0.9 : 0.5}
+          opacity={isActive ? 0.1 : 0.5}
           side={THREE.DoubleSide}
         />
       </mesh>
@@ -76,9 +76,15 @@ function HotspotDot({ hotspot, isActive, onSelect }) {
 // ── Model ─────────────────────────────────────────────────
 function Model({ path, scale, position }) {
   const { scene } = useGLTF(path);
-  return <primitive object={scene} scale={scale} position={position} />;
+  return (
+    <primitive
+      object={scene}
+      scale={scale}
+      position={position}
+      onClick={(e) => console.log("Point:", e.point)}
+    />
+  );
 }
-
 // ── Main Page ─────────────────────────────────────────────
 export default function ArtifactDetails() {
   const { id } = useParams();
