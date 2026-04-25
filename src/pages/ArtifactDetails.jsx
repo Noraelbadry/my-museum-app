@@ -37,6 +37,9 @@ function CameraController({ target, controlsRef }) {
 // ── Hotspot Dot ───────────────────────────────────────────
 function HotspotDot({ hotspot, isActive, onSelect }) {
   const [hovered, setHovered] = useState(false);
+
+  const showRing = hovered || isActive;
+
   return (
     <mesh
       position={hotspot.position}
@@ -45,29 +48,33 @@ function HotspotDot({ hotspot, isActive, onSelect }) {
       onPointerOut={() => { setHovered(false); document.body.style.cursor = "default"; }}
       scale={hovered ? 1.4 : 1}
     >
-      {/* الكرة الشفافة */}
+      {/* كرة شفافة للـ click detection */}
       <sphereGeometry args={[0.05, 16, 16]} />
       <meshBasicMaterial
         color="#d4af5a"
         transparent
-        opacity={isActive || hovered ? 0.2 : 0.15}
+        opacity={0.01}
       />
 
-      {/* Ring خارجي */}
+      {/* Ring — بيظهر عند hover أو active بس */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.06, 0.08, 32]} />
         <meshBasicMaterial
           color="#d4af5a"
           transparent
-          opacity={isActive ? 0.1 : 0.5}
+          opacity={showRing ? 0.9 : 0}
           side={THREE.DoubleSide}
         />
       </mesh>
 
-      {/* نقطة صغيرة في المنتصف */}
+      {/* نقطة — بتظهر عند hover أو active بس */}
       <mesh>
-        <sphereGeometry args={[0.012, 16, 16]} />
-        <meshBasicMaterial color={isActive || hovered ? "#f0d080" : "#d4af5a"} />
+        <sphereGeometry args={[0.01, 16, 16]} />
+        <meshBasicMaterial
+          color={isActive ? "#f0d080" : "#d4af5a"}
+          transparent
+          opacity={showRing ? 1 : 0}
+        />
       </mesh>
     </mesh>
   );
