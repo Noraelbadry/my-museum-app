@@ -76,7 +76,6 @@ export default function ArtifactNarration() {
   height: 60px;
   margin: 30px 0;
   opacity: 0.3; 
-  position: center;
   
   
   /* تحويل ألوان المشغل لدرجة ذهبية خافتة تليق بالصورة */

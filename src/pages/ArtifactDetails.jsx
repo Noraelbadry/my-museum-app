@@ -119,7 +119,6 @@ function HotspotDot({ hotspot, isActive, onSelect }) {
   );
 }
 
-// ── Model — hotspots جوا الـ group عشان يتحركوا مع الموديل ──
 function Model({ path, scale, position, hotspots = [], activeHotspot, onSelect }) {
   const { scene } = useGLTF(path);
 
@@ -134,15 +133,7 @@ function Model({ path, scale, position, hotspots = [], activeHotspot, onSelect }
 
   return (
     <group position={position}>
-      <primitive
-        object={scene}
-        scale={scale}
-        onClick={(e) => {
-          e.stopPropagation();
-          const localPoint = scene.worldToLocal(e.point.clone());
-          console.log(`[${localPoint.x.toFixed(4)}, ${localPoint.y.toFixed(4)}, ${localPoint.z.toFixed(4)}]`);
-        }}
-      />
+      <primitive object={scene} scale={scale} />
       {hotspots.map((h) => (
         <HotspotDot
           key={h.id}
@@ -197,13 +188,7 @@ export default function ArtifactDetails() {
       --gold: #d4af5a; --gold-light: #f0d080; --gold-dark: #8a6820;
       --bg: #060504; --white: #f5f0e8; --muted: rgba(245,240,232,0.4);
     }
-   .cinema-page { 
-  position: fixed; 
-  inset: 0; 
-  overflow: hidden; 
-  opacity: 0; 
-  transition: opacity 1s ease; 
-}
+    .cinema-page { position: fixed; inset: 0; overflow: hidden; opacity: 0; transition: opacity 1s ease; }
     .cinema-page.entered { opacity: 1; }
     .vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, transparent 35%, rgba(6,5,4,0.7) 100%); pointer-events: none; z-index: 2; }
     .cinema-top { position: absolute; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: flex-start; justify-content: space-between; padding: 28px 36px; pointer-events: none; }
@@ -261,96 +246,64 @@ export default function ArtifactDetails() {
     .corner.bl { bottom: 16px; left: 16px; border-bottom: 1px solid rgba(212,175,90,0.35); border-left: 1px solid rgba(212,175,90,0.35); }
     .corner.br { bottom: 16px; right: 16px; border-bottom: 1px solid rgba(212,175,90,0.35); border-right: 1px solid rgba(212,175,90,0.35); }
     @keyframes goldPulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(212,175,90,0.4); } 50% { opacity: 0.4; box-shadow: 0 0 0 5px rgba(212,175,90,0); } }
-  @media (max-width: 768px) {
-  .cinema-left { display: none; }
-
-  .hotspot-card {
-    right: 16px;
-    left: 16px;
-    max-width: none;
-    width: auto;
-    top: 80px;        /* ← فوق بدل تحت */
-    bottom: auto;
-    transform: none;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .hotspot-card.visible {
-    opacity: 1;
-    transform: none;
-    pointer-events: all;
-  }
-
-  .cinema-name { font-size: 1.6rem; }
-  .cinema-bottom { padding: 0 16px 20px; }
-  .hotspot-drawer { padding: 16px 16px 28px; }
-}
+    @media (max-width: 768px) {
+      .cinema-left { display: none; }
+      .hotspot-card { right: 16px; left: 16px; max-width: none; width: auto; top: 80px; bottom: auto; transform: none; opacity: 0; pointer-events: none; }
+      .hotspot-card.visible { opacity: 1; transform: none; pointer-events: all; }
+      .cinema-name { font-size: 1.6rem; }
+      .cinema-bottom { padding: 0 16px 20px; }
+      .hotspot-drawer { padding: 16px 16px 28px; }
+    }
   `;
 
   const activeIndex = hotspots.findIndex(h => h.id === activeHotspot?.id);
 
   return (
-
     <>
-    {/* طبقة مخفية لتفعيل الـ AR فقط */}
-<div style={{ position: "absolute", top: 10, left: 10, width: "1px", height: "1px", overflow: "hidden", opacity: 0 }}>
-  <model-viewer
-    id="ar-trigger"
-    src={artifact.modelPath}
-    ar
-    ar-modes="scene-viewer webxr quick-look"
-    ar-placement="floor"
-    camera-controls
-  >
-    <button slot="ar-button" id="real-ar-button"></button>
-  </model-viewer>
-</div>
+      {/* AR model viewer — hidden */}
+      <div style={{ position: "absolute", width: "1px", height: "1px", overflow: "hidden", opacity: 0, top: 0, left: 0 }}>
+        <model-viewer
+          id="ar-trigger"
+          src={artifact.modelPath}
+          ar
+          ar-modes="scene-viewer webxr quick-look"
+          ar-placement="floor"
+          camera-controls
+        >
+          <button slot="ar-button" id="real-ar-button"></button>
+        </model-viewer>
+      </div>
 
+      {/* AR button — mobile only */}
+      <button
+        onClick={() => {
+          const mv = document.getElementById('ar-trigger');
+          if (mv) mv.activateAR();
+        }}
+        style={{
+          display: window.matchMedia("(min-width: 1024px)").matches ? "none" : "block",
+          position: "absolute",
+          width: "270px",
+          top: "14%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 100,
+          backgroundColor: "rgba(212, 175, 90, 0.15)",
+          border: "1px solid #d4af37",
+          color: "#d4af37",
+          padding: "10px 24px",
+          borderRadius: "50px",
+          fontFamily: "'Cinzel', serif",
+          fontSize: "0.65rem",
+          letterSpacing: "0.3em",
+          cursor: "pointer",
+          backdropFilter: "blur(10px)",
+          boxShadow: "0 4px 15px rgba(0,0,0,0.3)"
+        }}
+      >
+        ✨ VIEW IN YOUR SPACE ✨
+      </button>
 
-<button 
-  onClick={() => {
-    
-    const mv = document.getElementById('ar-trigger');
-    if (mv) {
-      // ودوس على زرار الـ AR اللي جواها
-      mv.activateAR(); 
-    }
-  }}
-  style={{
-    display: window.matchMedia("(min-width: 1024px)").matches ? "none" : "block",
-    position: "absolute",
-    width: "270px",
-    top: "14%", 
-    left: "50%",
-    transform: "translateX(-50%)", 
-    zIndex: 100,
-    backgroundColor: "rgba(212, 175, 90, 0.15)",
-    border: "1px solid #d4af37",
-    color: "#d4af37",
-    padding: "10px 24px",
-    borderRadius: "50px",
-    fontFamily: "'Cinzel', serif",
-    fontSize: "0.65rem",
-    letterSpacing: "0.3em",
-    cursor: "pointer",
-    backdropFilter: "blur(10px)",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.3)"
-  }}
->
-  ✨ VIEW IN YOUR SPACE ✨
-</button>
-
-{/* 2. الماكينة المستخبية (الـ Model Viewer) */}
-<div style={{ display: 'none' }}> 
-    <model-viewer
-      id="ar-trigger" // لازم الاسم ده يكون نفس اللي فوق في الـ onClick
-      src={artifact.modelPath} // مسار الموديل بتاعك
-      ar
-      ar-modes="webxr scene-viewer quick-look"
-    >
-    </model-viewer>
-</div>
       <style>{styles}</style>
       <div className={`cinema-page ${entered ? "entered" : ""}`}>
 
@@ -370,7 +323,6 @@ export default function ArtifactDetails() {
           <Floor />
 
           <Suspense fallback={null}>
-            {/* ← الـ hotspots جوا الـ Model عشان يتحركوا معاه */}
             <Model
               path={artifact.modelPath}
               scale={artifact.modelScale || 2.0}
@@ -384,26 +336,16 @@ export default function ArtifactDetails() {
           <CameraController target={cameraTarget} controlsRef={controlsRef} />
           <IdleDrift active={!!activeHotspot} />
 
-<OrbitControls
-  ref={controlsRef}
-  onChange={() => {
-    if (controlsRef.current) {
-      const cam = controlsRef.current.object;
-      const tgt = controlsRef.current.target;
-      console.log(
-        `cam:[${cam.position.x.toFixed(3)},${cam.position.y.toFixed(3)},${cam.position.z.toFixed(3)}]`,
-        `tgt:[${tgt.x.toFixed(3)},${tgt.y.toFixed(3)},${tgt.z.toFixed(3)}]`
-      );
-    }
-  }}
-  enableZoom={true}
-  enablePan={false}
-  autoRotate={!activeHotspot && !drawerOpen}
-  autoRotateSpeed={0.5}
-  minDistance={1.5}
-  maxDistance={7}
-  zoomSpeed={0.6}
-/>
+          <OrbitControls
+            ref={controlsRef}
+            enableZoom={true}
+            enablePan={false}
+            autoRotate={!activeHotspot && !drawerOpen}
+            autoRotateSpeed={0.5}
+            minDistance={1.5}
+            maxDistance={7}
+            zoomSpeed={0.6}
+          />
         </Canvas>
 
         <div className="cinema-top">

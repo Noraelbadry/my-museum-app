@@ -135,15 +135,6 @@ export default function IntroScreen({ onComplete }) {
       flex-shrink: 0;
     }
 
-    /* Eye of Horus icon */
-    .intro-eye {
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.9s ease 0.1s, transform 0.9s ease 0.1s;
-      margin-bottom: 18px;
-    }
-    .intro-wrap:not(.leaving) .intro-eye { opacity: 0.7; transform: translateY(0); }
-
     /* Main title */
     .intro-title {
       font-family: 'Cinzel Decorative', serif;
