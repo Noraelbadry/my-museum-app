@@ -1,11 +1,57 @@
 import { useParams } from "react-router-dom";
 import { artifacts } from "../data";
 import { useState, Suspense, useRef, useEffect } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
-// ── Camera Controller ─────────────────────────────────────
+function DustParticles() {
+  const mesh = useRef();
+  const count = 400;
+  const positions = useRef(new Float32Array(count * 3).map(() => (Math.random() - 0.5) * 8));
+  const speeds = useRef(new Float32Array(count).map(() => 0.002 + Math.random() * 0.003));
+
+  useFrame((state) => {
+    const pos = positions.current;
+    for (let i = 0; i < count; i++) {
+      pos[i * 3 + 1] += speeds.current[i];
+      pos[i * 3] += Math.sin(state.clock.elapsedTime * 0.3 + i) * 0.0004;
+      if (pos[i * 3 + 1] > 4) pos[i * 3 + 1] = -4;
+    }
+    mesh.current.geometry.attributes.position.needsUpdate = true;
+  });
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(positions.current, 3));
+
+  return (
+    <points ref={mesh} geometry={geo}>
+      <pointsMaterial color="#d4a060" size={0.018} transparent opacity={0.35}
+        sizeAttenuation depthWrite={false} blending={THREE.AdditiveBlending} />
+    </points>
+  );
+}
+
+function CinematicLights() {
+  const spotRef = useRef();
+  useFrame((state) => {
+    if (spotRef.current)
+      spotRef.current.intensity = 5 + Math.sin(state.clock.elapsedTime * 2.1) * 0.1;
+  });
+  return (
+    <>
+      <ambientLight intensity={1.2} color="#fff8e8" />
+      <spotLight ref={spotRef} position={[0, 5, 2]} angle={Math.PI / 7} penumbra={0.5}
+        intensity={5} color="#ffe8b0" castShadow
+        shadow-mapSize={[2048, 2048]} shadow-bias={-0.0003} />
+      <directionalLight position={[3, 3, 3]} intensity={1.5} color="#fff8e8" />
+      <directionalLight position={[-3, 2, -4]} intensity={0.8} color="#c8a060" />
+      <pointLight position={[2.5, 1.5, 0.5]} intensity={1.5} color="#d4a060" distance={8} />
+      <pointLight position={[0, -1.2, 1.5]} intensity={0.8} color="#7a4010" distance={6} />
+    </>
+  );
+}
+
 function CameraController({ target, controlsRef }) {
   const { camera } = useThree();
   const animating = useRef(false);
@@ -20,10 +66,11 @@ function CameraController({ target, controlsRef }) {
     let progress = 0;
     const animate = () => {
       if (!animating.current) return;
-      progress += 0.03;
+      progress += 0.025;
       if (progress >= 1) { progress = 1; animating.current = false; }
-      camera.position.lerpVectors(startPos, endPos, progress);
-      controlsRef.current.target.lerpVectors(startTarget, endTarget, progress);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      camera.position.lerpVectors(startPos, endPos, eased);
+      controlsRef.current.target.lerpVectors(startTarget, endTarget, eased);
       controlsRef.current.update();
       if (progress < 1) requestAnimationFrame(animate);
     };
@@ -34,75 +81,97 @@ function CameraController({ target, controlsRef }) {
   return null;
 }
 
-// ── Hotspot Dot ───────────────────────────────────────────
+function IdleDrift({ active }) {
+  const { camera } = useThree();
+  useFrame((state) => {
+    if (active) return;
+    camera.position.x += (Math.sin(state.clock.elapsedTime * 0.15) * 0.06 - camera.position.x * 0.005) * 0.02;
+    camera.position.y += (Math.sin(state.clock.elapsedTime * 0.1) * 0.03 - (camera.position.y - 0.3) * 0.005) * 0.02;
+  });
+  return null;
+}
+
 function HotspotDot({ hotspot, isActive, onSelect }) {
   const [hovered, setHovered] = useState(false);
-
   const showRing = hovered || isActive;
-
   return (
     <mesh
       position={hotspot.position}
       onClick={(e) => { e.stopPropagation(); onSelect(hotspot); }}
       onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = "pointer"; }}
       onPointerOut={() => { setHovered(false); document.body.style.cursor = "default"; }}
-      scale={hovered ? 1.4 : 1}
+      scale={hovered ? 1.5 : 1}
     >
-      {/* كرة شفافة للـ click detection */}
       <sphereGeometry args={[0.05, 16, 16]} />
-      <meshBasicMaterial
-        color="#d4af5a"
-        transparent
-        opacity={0.01}
-      />
-
-      {/* Ring — بيظهر عند hover أو active بس */}
+      <meshBasicMaterial color="#d4af5a" transparent opacity={0.01} />
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.06, 0.08, 32]} />
-        <meshBasicMaterial
-          color="#d4af5a"
-          transparent
-          opacity={showRing ? 0.9 : 0}
-          side={THREE.DoubleSide}
-        />
+        <ringGeometry args={[0.06, 0.085, 32]} />
+        <meshBasicMaterial color="#d4af5a" transparent opacity={showRing ? 0.95 : 0} side={THREE.DoubleSide} />
       </mesh>
-
-      {/* نقطة — بتظهر عند hover أو active بس */}
       <mesh>
-        <sphereGeometry args={[0.01, 16, 16]} />
-        <meshBasicMaterial
-          color={isActive ? "#f0d080" : "#d4af5a"}
-          transparent
-          opacity={showRing ? 1 : 0}
-        />
+        <sphereGeometry args={[0.012, 16, 16]} />
+        <meshBasicMaterial color={isActive ? "#f0d080" : "#d4af5a"} transparent opacity={showRing ? 1 : 0} />
       </mesh>
     </mesh>
   );
 }
 
-// ── Model ─────────────────────────────────────────────────
-function Model({ path, scale, position }) {
+// ── Model — hotspots جوا الـ group عشان يتحركوا مع الموديل ──
+function Model({ path, scale, position, hotspots = [], activeHotspot, onSelect }) {
   const { scene } = useGLTF(path);
+
+  useEffect(() => {
+    scene.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+  }, [scene]);
+
   return (
-    <primitive
-      object={scene}
-      scale={scale}
-      position={position}
-      onClick={(e) => console.log("Point:", e.point)}
-    />
+    <group position={position}>
+      <primitive
+        object={scene}
+        scale={scale}
+        onClick={(e) => {
+          e.stopPropagation();
+          const localPoint = scene.worldToLocal(e.point.clone());
+          console.log(`[${localPoint.x.toFixed(4)}, ${localPoint.y.toFixed(4)}, ${localPoint.z.toFixed(4)}]`);
+        }}
+      />
+      {hotspots.map((h) => (
+        <HotspotDot
+          key={h.id}
+          hotspot={h}
+          isActive={activeHotspot?.id === h.id}
+          onSelect={onSelect}
+        />
+      ))}
+    </group>
   );
 }
-// ── Main Page ─────────────────────────────────────────────
+
+function Floor() {
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.2, 0]} receiveShadow>
+      <planeGeometry args={[20, 20]} />
+      <shadowMaterial opacity={0.5} />
+    </mesh>
+  );
+}
+
 export default function ArtifactDetails() {
   const { id } = useParams();
   const artifact = artifacts.find((item) => item.id.toString() === id);
   const [activeHotspot, setActiveHotspot] = useState(null);
   const [cameraTarget, setCameraTarget] = useState(null);
-  const [pageLoaded, setPageLoaded] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [entered, setEntered] = useState(false);
   const controlsRef = useRef();
 
   useEffect(() => {
-    const t = setTimeout(() => setPageLoaded(true), 100);
+    const t = setTimeout(() => setEntered(true), 120);
     return () => clearTimeout(t);
   }, []);
 
@@ -116,496 +185,239 @@ export default function ArtifactDetails() {
     const isSame = hotspot.id === activeHotspot?.id;
     setActiveHotspot(isSame ? null : hotspot);
     setCameraTarget(isSame ? null : hotspot);
+    if (!isSame) setDrawerOpen(false);
   };
 
   const styles = `
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=Lato:ital,wght@0,300;0,400;1,300&display=swap');
-
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@300;400;600&family=Lato:ital,wght@0,300;0,400;1,300&display=swap');
     :root {
-      --gold: #d4af5a;
-      --gold-light: #f0d080;
-      --gold-dark: #8a6820;
-      --gold-muted: rgba(212,175,90,0.35);
-      --bg-card: rgba(8,6,2,0.82);
-      --white: #f5f0e8;
-      --muted: rgba(245,240,232,0.4);
+      --gold: #d4af5a; --gold-light: #f0d080; --gold-dark: #8a6820;
+      --bg: #060504; --white: #f5f0e8; --muted: rgba(245,240,232,0.4);
     }
+   .cinema-page { 
+  position: fixed; 
+  inset: 0; 
+  overflow: hidden; 
+  opacity: 0; 
+  transition: opacity 1s ease; 
+}
+    .cinema-page.entered { opacity: 1; }
+    .vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, transparent 35%, rgba(6,5,4,0.7) 100%); pointer-events: none; z-index: 2; }
+    .cinema-top { position: absolute; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: flex-start; justify-content: space-between; padding: 28px 36px; pointer-events: none; }
+    .cinema-kingdom { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); background: rgba(212,175,90,0.08); border: 1px solid rgba(212,175,90,0.2); border-radius: 50px; padding: 5px 14px; pointer-events: all; }
+    .cinema-catalog { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.3em; color: var(--muted); }
+    .cinema-title-wrap { position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; pointer-events: none; white-space: nowrap; }
+    .cinema-name { font-family: 'Cinzel Decorative', serif; font-size: clamp(2rem, 5vw, 4.5rem); font-weight: 700; color: transparent; background: linear-gradient(160deg, #f5e49c 0%, var(--gold) 45%, #7a5e28 100%); -webkit-background-clip: text; background-clip: text; letter-spacing: 0.06em; display: block; opacity: 0; transform: translateY(16px); transition: opacity 1s ease 0.3s, transform 1s ease 0.3s; }
+    .cinema-page.entered .cinema-name { opacity: 1; transform: translateY(0); }
+    .cinema-dynasty { font-family: 'Lato', sans-serif; font-size: 0.7rem; font-weight: 300; letter-spacing: 0.32em; text-transform: uppercase; color: var(--muted); margin-top: 8px; display: block; opacity: 0; transition: opacity 1.2s ease 0.6s; }
+    .cinema-page.entered .cinema-dynasty { opacity: 1; }
+    .cinema-ornament { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; opacity: 0; transition: opacity 1.2s ease 0.8s; }
+    .cinema-page.entered .cinema-ornament { opacity: 1; }
+    .orn-line { height: 1px; width: 40px; background: linear-gradient(to right, transparent, var(--gold)); }
+    .orn-line.r { background: linear-gradient(to left, transparent, var(--gold)); }
+    .orn-diamond { width: 4px; height: 4px; background: var(--gold); transform: rotate(45deg); }
+    .cinema-left { position: absolute; left: 36px; top: 50%; transform: translateY(-50%); z-index: 10; pointer-events: none; opacity: 0; transition: opacity 1s ease 1s; background: rgba(6,5,4,0.6); border: 1px solid rgba(212,175,90,0.2); border-radius: 12px; padding: 18px 20px; backdrop-filter: blur(12px); }
+    .cinema-page.entered .cinema-left { opacity: 1; }
+    .info-label { font-family: 'Cinzel', serif; font-size: 0.55rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; opacity: 0.8; }
+    .info-row { margin-bottom: 10px; }
+    .info-key { font-family: 'Cinzel', serif; font-size: 0.55rem; letter-spacing: 0.2em; color: var(--gold); text-transform: uppercase; display: block; margin-bottom: 2px; opacity: 0.7; }
+    .info-val { font-family: 'Lato', sans-serif; font-size: 0.8rem; font-weight: 300; color: var(--white); }
+    .info-divider { width: 24px; height: 1px; background: linear-gradient(to right, var(--gold), transparent); margin: 12px 0; opacity: 0.4; }
+    .hotspot-card { position: absolute; right: 36px; top: 50%; transform: translateY(-50%) translateX(20px); z-index: 10; max-width: 240px; background: rgba(6,5,4,0.88); border: 1px solid rgba(212,175,90,0.25); border-radius: 14px; padding: 20px; backdrop-filter: blur(20px); box-shadow: 0 8px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(212,175,90,0.1); opacity: 0; pointer-events: none; transition: opacity 0.4s ease, transform 0.4s ease; }
+    .hotspot-card.visible { opacity: 1; transform: translateY(-50%) translateX(0); pointer-events: all; }
+    .hcard-num { font-family: 'Cinzel', serif; font-size: 0.55rem; letter-spacing: 0.3em; color: var(--gold-dark); margin-bottom: 6px; }
+    .hcard-title { font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 600; color: var(--gold); letter-spacing: 0.06em; margin-bottom: 10px; line-height: 1.3; }
+    .hcard-divider { height: 1px; background: linear-gradient(to right, var(--gold), transparent); margin-bottom: 12px; opacity: 0.3; }
+    .hcard-desc { font-family: 'Lato', sans-serif; font-size: 0.75rem; font-weight: 300; font-style: italic; color: var(--muted); line-height: 1.75; }
+    .hcard-close { position: absolute; top: 10px; right: 14px; font-family: 'Lato', sans-serif; font-size: 0.7rem; color: var(--gold-dark); cursor: pointer; background: none; border: none; padding: 0; transition: color 0.2s; }
+    .hcard-close:hover { color: var(--gold); }
+    .cinema-bottom { position: absolute; bottom: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 36px 28px; }
+    .drawer-toggle { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); background: rgba(6,5,4,0.8); border: 1px solid rgba(212,175,90,0.25); border-radius: 50px; padding: 9px 20px; cursor: pointer; backdrop-filter: blur(12px); transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; }
+    .drawer-toggle:hover { background: rgba(212,175,90,0.1); border-color: rgba(212,175,90,0.5); }
+    .drawer-toggle-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); animation: goldPulse 2s ease-in-out infinite; }
+    .cinema-hint { font-family: 'Cinzel', serif; font-size: 0.52rem; letter-spacing: 0.25em; color: var(--muted); opacity: 0.5; display: flex; align-items: center; gap: 8px; pointer-events: none; transition: opacity 0.4s; }
+    .cinema-hint.hidden { opacity: 0; }
+    .hint-line { width: 1px; height: 22px; background: linear-gradient(to bottom, transparent, var(--gold)); animation: lineGrow 2.5s ease-in-out infinite; }
+    @keyframes lineGrow { 0%,100% { height: 16px; opacity: 0.4; } 50% { height: 28px; opacity: 0.9; } }
+    .hotspot-drawer { position: absolute; bottom: 0; left: 0; right: 0; z-index: 20; background: rgba(6,5,4,0.95); border-top: 1px solid rgba(212,175,90,0.15); backdrop-filter: blur(24px); padding: 20px 36px 36px; transform: translateY(100%); transition: transform 0.45s cubic-bezier(0.4,0,0.2,1); }
+    .hotspot-drawer.open { transform: translateY(0); }
+    .drawer-handle { width: 36px; height: 3px; background: rgba(212,175,90,0.3); border-radius: 3px; margin: 0 auto 16px; cursor: pointer; }
+    .drawer-title { font-family: 'Cinzel', serif; font-size: 0.55rem; letter-spacing: 0.35em; text-transform: uppercase; color: rgba(212,175,90,0.45); margin-bottom: 14px; }
+    .drawer-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+    .drawer-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,90,0.1); border-radius: 8px; padding: 10px 14px; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; gap: 8px; min-width: 130px; }
+    .drawer-item:hover { background: rgba(212,175,90,0.07); border-color: rgba(212,175,90,0.3); }
+    .drawer-item.active { background: rgba(212,175,90,0.1); border-color: rgba(212,175,90,0.45); }
+    .drawer-item-num { font-family: 'Cinzel', serif; font-size: 0.6rem; color: var(--gold-dark); min-width: 16px; }
+    .drawer-item.active .drawer-item-num { color: var(--gold); }
+    .drawer-pip { width: 5px; height: 5px; border-radius: 50%; background: var(--gold-dark); flex-shrink: 0; }
+    .drawer-item.active .drawer-pip { background: var(--gold-light); box-shadow: 0 0 8px rgba(240,208,128,0.5); }
+    .drawer-item-name { font-family: 'Cinzel', serif; font-size: 0.7rem; color: var(--gold); font-weight: 600; letter-spacing: 0.04em; }
+    .corner { position: absolute; width: 22px; height: 22px; z-index: 3; pointer-events: none; }
+    .corner.tl { top: 16px; left: 16px; border-top: 1px solid rgba(212,175,90,0.35); border-left: 1px solid rgba(212,175,90,0.35); }
+    .corner.tr { top: 16px; right: 16px; border-top: 1px solid rgba(212,175,90,0.35); border-right: 1px solid rgba(212,175,90,0.35); }
+    .corner.bl { bottom: 16px; left: 16px; border-bottom: 1px solid rgba(212,175,90,0.35); border-left: 1px solid rgba(212,175,90,0.35); }
+    .corner.br { bottom: 16px; right: 16px; border-bottom: 1px solid rgba(212,175,90,0.35); border-right: 1px solid rgba(212,175,90,0.35); }
+    @keyframes goldPulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(212,175,90,0.4); } 50% { opacity: 0.4; box-shadow: 0 0 0 5px rgba(212,175,90,0); } }
+  @media (max-width: 768px) {
+  .cinema-left { display: none; }
 
-    .detail-page {
-      min-height: 100vh;
-      color: var(--white);
-      padding: 80px 0 0;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      opacity: 0;
-      transform: translateY(16px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
-    }
+  .hotspot-card {
+    right: 16px;
+    left: 16px;
+    max-width: none;
+    width: auto;
+    top: 80px;        /* ← فوق بدل تحت */
+    bottom: auto;
+    transform: none;
+    opacity: 0;
+    pointer-events: none;
+  }
 
-    .detail-page.loaded {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  .hotspot-card.visible {
+    opacity: 1;
+    transform: none;
+    pointer-events: all;
+  }
 
-    .detail-hero {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 28px 5% 24px;
-      border-bottom: 1px solid rgba(212,175,90,0.12);
-      position: relative;
-    }
-
-    .detail-hero::after {
-      content: '';
-      position: absolute;
-      bottom: -1px; left: 5%; right: 5%;
-      height: 1px;
-      background: linear-gradient(to right, transparent, var(--gold), transparent);
-    }
-
-    .detail-kingdom-badge {
-      font-family: 'Lato', sans-serif;
-      font-size: 0.62rem;
-      font-weight: 400;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: var(--gold);
-      background: rgba(212,175,90,0.08);
-      border: 1px solid rgba(212,175,90,0.2);
-      border-radius: 50px;
-      padding: 5px 14px;
-    }
-
-    .detail-title-wrap {
-      text-align: center;
-      flex: 1;
-      padding: 0 24px;
-    }
-
-    .detail-title {
-      font-family: 'Cinzel Decorative', serif;
-      font-size: clamp(1.4rem, 3vw, 2.6rem);
-      font-weight: 700;
-      color: transparent;
-      background: linear-gradient(160deg, #f5e49c 0%, #d4af5a 45%, #a07830 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      margin: 0;
-      letter-spacing: 0.08em;
-      line-height: 1.1;
-    }
-
-    .detail-subtitle {
-      font-family: 'Lato', sans-serif;
-      font-size: 0.68rem;
-      font-weight: 300;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 6px;
-      font-style: italic;
-    }
-
-    .detail-material-badge {
-      font-family: 'Lato', sans-serif;
-      font-size: 0.62rem;
-      font-weight: 300;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-align: right;
-      min-width: 120px;
-    }
-
-    .detail-body {
-      display: flex;
-      flex: 1;
-      height: calc(100vh - 160px);
-      min-height: 500px;
-    }
-
-    .detail-sidebar {
-      width: 300px;
-      flex-shrink: 0;
-      border-right: 1px solid rgba(212,175,90,0.08);
-      display: flex;
-      flex-direction: column;
-      padding: 32px 24px;
-      gap: 6px;
-      position: relative;
-      overflow-y: auto;
-      scrollbar-width: none;
-    }
-
-    .detail-sidebar::after {
-      content: '';
-      position: absolute;
-      top: 10%; right: -1px; bottom: 10%;
-      width: 1px;
-      background: linear-gradient(to bottom, transparent, var(--gold-muted), transparent);
-    }
-
-    .sidebar-label {
-      font-family: 'Cinzel', serif;
-      font-size: 0.55rem;
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      color: rgba(212,175,90,0.45);
-      margin-bottom: 12px;
-      padding-left: 16px;
-    }
-
-    .hotspot-item {
-      border-radius: 10px;
-      padding: 14px 16px;
-      cursor: pointer;
-      transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
-      position: relative;
-      border: 1px solid transparent;
-    }
-
-    .hotspot-item::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 12px; bottom: 12px;
-      width: 2px;
-      background: linear-gradient(to bottom, transparent, var(--gold), transparent);
-      border-radius: 2px;
-      opacity: 0;
-      transition: opacity 0.35s ease;
-    }
-
-    .hotspot-item:hover {
-      background: rgba(212,175,90,0.05);
-      border-color: rgba(212,175,90,0.15);
-    }
-
-    .hotspot-item.active {
-      background: rgba(212,175,90,0.08);
-      border-color: rgba(212,175,90,0.3);
-      box-shadow: 0 2px 20px rgba(212,175,90,0.08), inset 0 1px 0 rgba(212,175,90,0.1);
-    }
-
-    .hotspot-item.active::before { opacity: 1; }
-
-    .hotspot-item-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .hotspot-index {
-      font-family: 'Cinzel', serif;
-      font-size: 0.65rem;
-      color: var(--gold-dark);
-      min-width: 18px;
-      transition: color 0.3s;
-    }
-
-    .hotspot-item.active .hotspot-index { color: var(--gold); }
-
-    .hotspot-pip {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--gold-dark);
-      flex-shrink: 0;
-      transition: all 0.35s ease;
-      position: relative;
-    }
-
-    .hotspot-pip::after {
-      content: '';
-      position: absolute;
-      inset: -3px;
-      border-radius: 50%;
-      border: 1px solid var(--gold);
-      opacity: 0;
-      transition: opacity 0.35s ease;
-    }
-
-    .hotspot-item.active .hotspot-pip {
-      background: var(--gold-light);
-      box-shadow: 0 0 10px rgba(240,208,128,0.5);
-    }
-
-    .hotspot-item.active .hotspot-pip::after { opacity: 1; }
-
-    .hotspot-name {
-      font-family: 'Cinzel', serif;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--gold);
-      letter-spacing: 0.06em;
-      transition: color 0.3s;
-    }
-
-    .hotspot-desc {
-      font-family: 'Lato', sans-serif;
-      font-size: 0.73rem;
-      font-weight: 300;
-      font-style: italic;
-      color: rgba(245,240,232,0.5);
-      line-height: 1.7;
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1),
-                  opacity 0.35s ease,
-                  margin-top 0.35s ease;
-      margin-top: 0;
-      padding-left: 30px;
-    }
-
-    .hotspot-item.active .hotspot-desc {
-      max-height: 160px;
-      opacity: 1;
-      margin-top: 10px;
-    }
-
-    .sidebar-divider {
-      height: 1px;
-      background: linear-gradient(to right, transparent, rgba(212,175,90,0.15), transparent);
-      margin: 4px 0;
-    }
-
-    .sidebar-footer {
-      margin-top: auto;
-      padding-top: 20px;
-      border-top: 1px solid rgba(212,175,90,0.08);
-    }
-
-    .sidebar-footer-text {
-      font-family: 'Lato', sans-serif;
-      font-size: 0.62rem;
-      font-weight: 300;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: rgba(212,175,90,0.3);
-      text-align: center;
-    }
-
-    .detail-canvas-wrap {
-      flex: 1;
-      position: relative;
-      background: radial-gradient(ellipse at 50% 40%, rgba(212,175,90,0.04) 0%, transparent 65%);
-    }
-
-    .canvas-corner {
-      position: absolute;
-      width: 28px; height: 28px;
-      z-index: 5;
-      pointer-events: none;
-    }
-    .canvas-corner.tl { top: 20px; left: 20px; border-top: 1px solid rgba(212,175,90,0.4); border-left: 1px solid rgba(212,175,90,0.4); }
-    .canvas-corner.tr { top: 20px; right: 20px; border-top: 1px solid rgba(212,175,90,0.4); border-right: 1px solid rgba(212,175,90,0.4); }
-    .canvas-corner.bl { bottom: 20px; left: 20px; border-bottom: 1px solid rgba(212,175,90,0.4); border-left: 1px solid rgba(212,175,90,0.4); }
-    .canvas-corner.br { bottom: 20px; right: 20px; border-bottom: 1px solid rgba(212,175,90,0.4); border-right: 1px solid rgba(212,175,90,0.4); }
-
-    .active-info-bar {
-      position: absolute;
-      top: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-6px);
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--bg-card);
-      border: 1px solid rgba(212,175,90,0.3);
-      border-radius: 50px;
-      padding: 8px 20px;
-      pointer-events: none;
-      backdrop-filter: blur(16px);
-      opacity: 0;
-      transition: opacity 0.4s ease, transform 0.4s ease;
-      white-space: nowrap;
-    }
-
-    .active-info-bar.visible {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    .active-info-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--gold-light);
-      box-shadow: 0 0 8px rgba(240,208,128,0.6);
-    }
-
-    .active-info-title {
-      font-family: 'Cinzel', serif;
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--gold);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .canvas-hint {
-      position: absolute;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(8,6,2,0.7);
-      border: 1px solid rgba(212,175,90,0.18);
-      border-radius: 50px;
-      padding: 7px 18px;
-      pointer-events: none;
-      backdrop-filter: blur(10px);
-      transition: opacity 0.4s ease;
-    }
-
-    .canvas-hint.hidden { opacity: 0; }
-
-    .hint-pulse {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--gold);
-      animation: goldPulse 2s ease-in-out infinite;
-    }
-
-    .hint-label {
-      font-family: 'Lato', sans-serif;
-      font-size: 0.62rem;
-      font-weight: 300;
-      letter-spacing: 0.18em;
-      color: rgba(245,240,232,0.4);
-      text-transform: uppercase;
-    }
-
-    @keyframes goldPulse {
-      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(212,175,90,0.4); }
-      50% { opacity: 0.5; box-shadow: 0 0 0 5px rgba(212,175,90,0); }
-    }
-
-    @media (max-width: 900px) {
-      .detail-body { flex-direction: column; height: auto; }
-      .detail-sidebar {
-        width: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
-        border-right: none;
-        border-bottom: 1px solid rgba(212,175,90,0.08);
-        padding: 16px;
-        gap: 8px;
-      }
-      .detail-sidebar::after { display: none; }
-      .sidebar-label { width: 100%; }
-      .hotspot-item { flex: 1; min-width: 130px; }
-      .sidebar-footer { display: none; }
-      .detail-canvas-wrap { height: 55vw; min-height: 320px; }
-      .detail-title { font-size: 1.4rem; }
-    }
+  .cinema-name { font-size: 1.6rem; }
+  .cinema-bottom { padding: 0 16px 20px; }
+  .hotspot-drawer { padding: 16px 16px 28px; }
+}
   `;
+
+  const activeIndex = hotspots.findIndex(h => h.id === activeHotspot?.id);
 
   return (
     <>
       <style>{styles}</style>
-      <div className={`detail-page ${pageLoaded ? "loaded" : ""}`}>
+      <div className={`cinema-page ${entered ? "entered" : ""}`}>
 
-        <div className="detail-hero">
-          <div className="detail-kingdom-badge">{artifact.kingdom}</div>
-          <div className="detail-title-wrap">
-            <h1 className="detail-title">{artifact.name}</h1>
-            <p className="detail-subtitle">Ancient Egyptian Artifact</p>
-          </div>
-          <div className="detail-material-badge">{artifact.material}</div>
+        <div className="corner tl" /><div className="corner tr" />
+        <div className="corner bl" /><div className="corner br" />
+        <div className="vignette" />
+
+        <Canvas
+          shadows
+          camera={{ position: [0, 0.3, 3.8], fov: 42 }}
+          gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+        >
+          <fog attach="fog" args={["#060504", 6, 18]} />
+          <CinematicLights />
+          <DustParticles />
+          <Floor />
+
+          <Suspense fallback={null}>
+            {/* ← الـ hotspots جوا الـ Model عشان يتحركوا معاه */}
+            <Model
+              path={artifact.modelPath}
+              scale={artifact.modelScale || 2.0}
+              position={artifact.modelPosition || [0, -1.5, 0]}
+              hotspots={hotspots}
+              activeHotspot={activeHotspot}
+              onSelect={handleHotspotSelect}
+            />
+          </Suspense>
+
+          <CameraController target={cameraTarget} controlsRef={controlsRef} />
+          <IdleDrift active={!!activeHotspot} />
+
+<OrbitControls
+  ref={controlsRef}
+  onChange={() => {
+    if (controlsRef.current) {
+      const cam = controlsRef.current.object;
+      const tgt = controlsRef.current.target;
+      console.log(
+        `cam:[${cam.position.x.toFixed(3)},${cam.position.y.toFixed(3)},${cam.position.z.toFixed(3)}]`,
+        `tgt:[${tgt.x.toFixed(3)},${tgt.y.toFixed(3)},${tgt.z.toFixed(3)}]`
+      );
+    }
+  }}
+  enableZoom={true}
+  enablePan={false}
+  autoRotate={!activeHotspot && !drawerOpen}
+  autoRotateSpeed={0.5}
+  minDistance={1.5}
+  maxDistance={7}
+  zoomSpeed={0.6}
+/>
+        </Canvas>
+
+        <div className="cinema-top">
+          <div className="cinema-kingdom">{artifact.kingdom}</div>
+          <div className="cinema-catalog">CAT. {String(artifact.id).padStart(3, "0")} / 007</div>
         </div>
 
-        <div className="detail-body">
+        <div className="cinema-left">
+          <div className="info-label">Details</div>
+          <div className="info-row">
+            <span className="info-key">Material</span>
+            <span className="info-val">{artifact.material}</span>
+          </div>
+          <div className="info-divider" />
+          <div className="info-row">
+            <span className="info-key">Kingdom</span>
+            <span className="info-val">{artifact.kingdom}</span>
+          </div>
+          <div className="info-row">
+            <span className="info-key">Hotspots</span>
+            <span className="info-val">{hotspots.length} points</span>
+          </div>
+        </div>
 
-          <div className="detail-sidebar">
-            <div className="sidebar-label">Explore Points</div>
-            {hotspots.length === 0 && (
-              <p style={{ fontFamily: "Lato", fontSize: "0.72rem", color: "rgba(245,240,232,0.25)", fontWeight: 300, fontStyle: "italic", padding: "0 16px" }}>
-                No annotations available.
-              </p>
-            )}
+        <div className={`hotspot-card ${activeHotspot ? "visible" : ""}`}>
+          <button className="hcard-close" onClick={() => handleHotspotSelect(activeHotspot)}>✕</button>
+          {activeHotspot && (
+            <>
+              <div className="hcard-num">{String(activeIndex + 1).padStart(2, "0")} / {String(hotspots.length).padStart(2, "0")}</div>
+              <div className="hcard-title">{activeHotspot.title}</div>
+              <div className="hcard-divider" />
+              <div className="hcard-desc">{activeHotspot.description}</div>
+            </>
+          )}
+        </div>
+
+        <div className="cinema-title-wrap">
+          <span className="cinema-name">{artifact.name}</span>
+          <span className="cinema-dynasty">{artifact.kingdom} · {artifact.material}</span>
+          <div className="cinema-ornament">
+            <div className="orn-line" />
+            <div className="orn-diamond" />
+            <div className="orn-line r" />
+          </div>
+        </div>
+
+        <div className="cinema-bottom">
+          <div className={`cinema-hint ${activeHotspot || drawerOpen ? "hidden" : ""}`}>
+            <div className="hint-line" />
+            Drag to rotate
+          </div>
+          {hotspots.length > 0 && (
+            <button className="drawer-toggle"
+              onClick={() => { setDrawerOpen(!drawerOpen); setActiveHotspot(null); setCameraTarget(null); }}>
+              <div className="drawer-toggle-dot" />
+              {drawerOpen ? "Close" : "Explore Points"}
+            </button>
+          )}
+        </div>
+
+        <div className={`hotspot-drawer ${drawerOpen ? "open" : ""}`}>
+          <div className="drawer-handle" onClick={() => setDrawerOpen(false)} />
+          <div className="drawer-title">Explore Points</div>
+          <div className="drawer-grid">
             {hotspots.map((h, i) => (
-              <>
-                <div
-                  key={h.id}
-                  className={`hotspot-item ${activeHotspot?.id === h.id ? "active" : ""}`}
-                  onClick={() => handleHotspotSelect(h)}
-                >
-                  <div className="hotspot-item-header">
-                    <span className="hotspot-index">0{i + 1}</span>
-                    <div className="hotspot-pip"></div>
-                    <div className="hotspot-name">{h.title}</div>
-                  </div>
-                  <div className="hotspot-desc">{h.description}</div>
-                </div>
-                {i < hotspots.length - 1 && <div className="sidebar-divider" />}
-              </>
+              <div key={h.id}
+                className={`drawer-item ${activeHotspot?.id === h.id ? "active" : ""}`}
+                onClick={() => { handleHotspotSelect(h); setDrawerOpen(false); }}>
+                <span className="drawer-item-num">0{i + 1}</span>
+                <div className="drawer-pip" />
+                <span className="drawer-item-name">{h.title}</span>
+              </div>
             ))}
-            <div className="sidebar-footer">
-              <p className="sidebar-footer-text">Click a point to navigate</p>
-            </div>
           </div>
-
-          <div className="detail-canvas-wrap">
-            <div className="canvas-corner tl" />
-            <div className="canvas-corner tr" />
-            <div className="canvas-corner bl" />
-            <div className="canvas-corner br" />
-
-            <div className={`active-info-bar ${activeHotspot ? "visible" : ""}`}>
-              <div className="active-info-dot" />
-              <span className="active-info-title">{activeHotspot?.title || ""}</span>
-            </div>
-
-            <Canvas
-              camera={{ position: [0, 0, 3], fov: 45 }}
-              style={{ width: "100%", height: "100%" }}
-            >
-              <ambientLight intensity={0.7} />
-              <directionalLight position={[5, 8, 5]} intensity={1.4} color="#fff8e8" />
-              <directionalLight position={[-4, 2, -4]} intensity={0.35} color="#c8a060" />
-              <pointLight position={[0, 3, 2]} intensity={0.4} color="#d4af5a" />
-
-              <Suspense fallback={null}>
-                <Model
-                  path={artifact.modelPath}
-                  scale={artifact.modelScale || 2.0}
-                  position={artifact.modelPosition || [0, -1.5, 0]}
-                />
-                {hotspots.map((h) => (
-                  <HotspotDot
-                    key={h.id}
-                    hotspot={h}
-                    isActive={activeHotspot?.id === h.id}
-                    onSelect={handleHotspotSelect}
-                  />
-                ))}
-              </Suspense>
-
-              <CameraController target={cameraTarget} controlsRef={controlsRef} />
-
-              <OrbitControls
-                ref={controlsRef}
-                enableZoom={true}
-                enablePan={false}
-                autoRotate={!activeHotspot}
-                autoRotateSpeed={0.6}
-                minDistance={1.5}
-                maxDistance={6}
-              />
-            </Canvas>
-
-            <div className={`canvas-hint ${activeHotspot ? "hidden" : ""}`}>
-              <div className="hint-pulse" />
-              <span className="hint-label">Click the gold dots to explore</span>
-            </div>
-          </div>
-
         </div>
+
       </div>
     </>
   );

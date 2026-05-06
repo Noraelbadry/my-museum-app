@@ -1,5 +1,4 @@
-import { useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { artifacts } from "../data";
 import { useState, useRef } from "react";
 
@@ -12,12 +11,20 @@ export default function ArtifactNarration() {
   const [currentTime, setCurrentTime] = useState(0);
 
   const handleTimeUpdate = () => {
-    setCurrentTime(audioRef.current.currentTime);
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+    }
   };
 
-  if (!artifact) return <div style={{ color: "white", textAlign: "center", padding: "100px" }}>Loading...</div>;
+  if (!artifact) {
+    return (
+      <div style={{ color: "white", textAlign: "center", padding: "100px" }}>
+        Loading...
+      </div>
+    );
+  }
 
-  const storyText = artifact.description || "Ancient Egypt was a civilization of ancient North Africa.";
+  const storyText = artifact.description || "";
   const words = storyText.split(" ");
 
   const styles = `
@@ -25,12 +32,14 @@ export default function ArtifactNarration() {
 
     .narration-page {
       min-height: 100vh;
-      background: transparent;
+      background: transparent; /* شفافة عشان تبين الـ Particles اللي وراها */
       color: white;
       padding: 120px 8% 60px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      position: relative;
+      z-index: 1;
     }
 
     .narration-inner {
@@ -38,82 +47,89 @@ export default function ArtifactNarration() {
       max-width: 800px;
       display: flex;
       flex-direction: column;
-      gap: 32px;
+      gap: 24px;
+    }
+
+    .narration-meta {
+      font-family: 'Lato', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #d4af5a; /* اللون الذهبي للمعلومات فوق */
+      margin-bottom: -10px;
     }
 
     .narration-title {
       font-family: 'Cinzel', serif;
-      font-size: 3rem;
+      font-size: 3.5rem;
       font-weight: 700;
-      color: transparent;
-      background: linear-gradient(180deg, #f5e49c 0%, #d4af5a 50%, #a07830 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
       margin: 0;
+      color: #ffffff;
+      text-shadow: 0 0 20px rgba(212, 175, 90, 0.3);
     }
 
-    .narration-ornament {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: -16px;
-    }
+   /* ابحثي عن .narration-audio في الكود واستبدليها بهذا التنسيق */
 
-    .orn-line { height: 1px; width: 60px; background: linear-gradient(to right, transparent, #d4af5a); }
-    .orn-line.r { background: linear-gradient(to left, transparent, #d4af5a); }
-    .orn-diamond { width: 5px; height: 5px; background: #d4af5a; transform: rotate(45deg); }
+.narration-audio {
+  width: 80%;
+  height: 60px;
+  margin: 30px 0;
+  opacity: 0.3; 
+  position: center;
+  
+  
+  /* تحويل ألوان المشغل لدرجة ذهبية خافتة تليق بالصورة */
+  filter: invert(90%) sepia(80%) saturate(400%) hue-rotate(15deg) brightness(1.5);
+  
+  border-radius: 30px;
+  transition: all 0.5s ease;
+}
 
-    .narration-meta {
-      font-family: 'Lato', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 300;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.4);
-    }
-
-    .narration-audio {
-      width: 100%;
-      opacity: 0.6;
-    }
-
+.narration-audio:hover {
+  /* عند الوقوف عليه بالماوس يظهر بوضوح أكثر */
+  opacity: 0.8;
+  filter: invert(100%) sepia(40%) saturate(600%) hue-rotate(20deg) brightness(2.0);
+}
     .narration-text {
       font-family: 'Lato', sans-serif;
       font-size: 1.4rem;
-      line-height: 2;
+      line-height: 1.8;
       font-weight: 300;
+      color: rgba(255, 255, 255, 0.4); /* الكلمات اللي لسه مإتقالتش تكون باهتة */
     }
 
     .narration-btn {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 12px;
       background: linear-gradient(135deg, #d4af5a, #f0d080);
       color: #1a1200;
       border: none;
       border-radius: 50px;
-      padding: 15px 36px;
+      padding: 16px 40px;
       font-family: 'Cinzel', serif;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       letter-spacing: 0.2em;
       text-transform: uppercase;
       cursor: pointer;
-      box-shadow: 0 4px 20px rgba(212,175,90,0.4);
-      transition: all 0.3s ease;
+      box-shadow: 0 4px 25px rgba(212, 175, 90, 0.4);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       align-self: center;
-      margin-top: 20px;
+      margin-top: 50px;
     }
 
     .narration-btn:hover {
-      box-shadow: 0 6px 28px rgba(212,175,90,0.6);
-      transform: translateY(-2px);
+      box-shadow: 0 8px 35px rgba(212, 175, 90, 0.6);
+      transform: translateY(-5px);
     }
 
     @media (max-width: 768px) {
-      .narration-title { font-size: 2rem; }
+      .narration-title { font-size: 2.2rem; }
       .narration-text { font-size: 1.1rem; }
-      .narration-btn { font-size: 0.75rem; padding: 12px 28px; }
+      .narration-page { padding-top: 80px; }
     }
   `;
 
@@ -122,25 +138,18 @@ export default function ArtifactNarration() {
       <style>{styles}</style>
       <div className="narration-page">
         <div className="narration-inner">
+          
+          {/* 1. المعلومات الفرعية فوق */}
+          <p className="narration-meta">
+            {artifact.kingdom} • {artifact.material}
+          </p>
 
-<div>
-  <h1
-    className="narration-title"
-    style={{
-      color: currentTime > 0 ? "#d4af5a" : "rgba(255,255,255,0.2)",
-      textShadow: currentTime > 0 ? "0 0 20px rgba(212,175,90,0.6)" : "none",
-      transition: "all 0.6s ease",
-      background: "none",
-      WebkitBackgroundClip: "unset",
-      backgroundClip: "unset",
-    }}
-  >
-    {artifact.name}
-  </h1>
-</div>
+          {/* 2. اسم القطعة */}
+          <h1 className="narration-title">
+            {artifact.name}
+          </h1>
 
-          <p className="narration-meta">{artifact.kingdom} · {artifact.material}</p>
-
+          {/* 3. مشغل الصوت */}
           <audio
             ref={audioRef}
             src={artifact.audioPath}
@@ -149,20 +158,23 @@ export default function ArtifactNarration() {
             className="narration-audio"
           />
 
+          {/* 4. النص المتزامن مع الصوت */}
           <div className="narration-text">
             {words.map((word, index) => {
               const timestamps = artifact.timestamps || [];
-              const delay = 1.0;
+              const delay = 0.3; // تقليل الـ delay عشان التزامن يبقى أحسن
+              
               const isActive = timestamps[index] !== undefined
-                ? currentTime >= timestamps[index] + delay
-                : currentTime > index * 0.4;
+                ? currentTime >= (timestamps[index] - delay)
+                : false;
+
               return (
                 <span
                   key={index}
                   style={{
-                    color: isActive ? "#d4af5a" : "rgba(255,255,255,0.2)",
-                    textShadow: isActive ? "0 0 15px rgba(212,175,90,0.5)" : "none",
-                    transition: "all 0.4s ease",
+                    color: isActive ? "#d4af5a" : "rgba(255, 255, 255, 0.2)",
+                    textShadow: isActive ? "0 0 12px rgba(212, 175, 90, 0.8)" : "none",
+                    transition: "all 0.3s ease",
                     display: "inline-block",
                     marginRight: "8px",
                   }}
@@ -173,11 +185,12 @@ export default function ArtifactNarration() {
             })}
           </div>
 
+          {/* 5. زرار الانتقال للموديل */}
           <button className="narration-btn" onClick={() => navigate(`/artifact/${id}/model`)}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#1a1200" strokeWidth="1.8" strokeLinejoin="round"/>
-              <path d="M2 17l10 5 10-5" stroke="#1a1200" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 12l10 5 10-5" stroke="#1a1200" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#1a1200" strokeWidth="2" strokeLinejoin="round"/>
+              <path d="M2 17l10 5 10-5" stroke="#1a1200" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 12l10 5 10-5" stroke="#1a1200" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             View 3D Model
           </button>

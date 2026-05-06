@@ -3,78 +3,70 @@ export default function ArtifactCard({ artifact }) {
     <div
       className="artifact-card"
       style={{
-        width: "280px",
-        height: "420px",
+        width: "100%",
+        aspectRatio: "2/3",
         backgroundColor: "#1a1a1a",
-        borderRadius: "20px",
+        borderRadius: "16px",
         overflow: "hidden",
         position: "relative",
         cursor: "pointer",
-
         boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
         border: "1px solid rgba(255, 215, 0, 0.1)",
         transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
-
-
       <div style={{ width: "100%", height: "100%", overflow: "hidden" }}>
         <img
           src={artifact.image}
           alt={artifact.name}
           className="card-image"
-          style={{ 
-            width: "100%", 
-            height: "100%", 
+          loading="lazy"
+          style={{
+            width: "100%",
+            height: "100%",
             objectFit: "cover",
-            transition: "transform 0.6s ease" 
+            transition: "transform 0.6s ease"
           }}
         />
       </div>
 
-    
       <div style={{
         position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
+        bottom: 0, left: 0, right: 0,
         height: "50%",
         background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)",
         display: "flex",
         flexDirection: "column",
         justifyContent: "flex-end",
-        padding: "25px",
+        padding: "clamp(12px, 4%, 25px)",
         textAlign: "left"
       }}>
-        <span style={{ 
-          margin: 0, 
-          color: "white", 
-          fontSize: "1.5rem", 
+        <span style={{
+          margin: 0,
+          color: "white",
+          fontSize: "clamp(0.95rem, 2.5vw, 1.5rem)",
           fontWeight: "600",
           fontFamily: "'Playfair Display', serif"
         }}>
           {artifact.name}
         </span>
-        <h3 style={{ 
-         color: "gold", 
-          fontSize: "0.8rem", 
-          letterSpacing: "2px", 
+        <h3 style={{
+          color: "gold",
+          fontSize: "clamp(0.6rem, 1.5vw, 0.8rem)",
+          letterSpacing: "2px",
           textTransform: "uppercase",
-          marginBottom: "5px" 
+          marginBottom: "5px"
         }}>
           {artifact.kingdom}
         </h3>
-        
-       
-        <div style={{ 
-          width: "40px", 
-          height: "2px", 
-          backgroundColor: "gold", 
-          marginTop: "10px" 
-        }}></div>
+        <div style={{
+          width: "30px",
+          height: "2px",
+          backgroundColor: "gold",
+          marginTop: "8px"
+        }} />
       </div>
 
-     
       <style>{`
         .artifact-card:hover {
           transform: translateY(-10px);

@@ -209,11 +209,38 @@ export default function Home() {
     }
 
     @media (max-width: 600px) {
-      .hero-title { font-size: 1.4rem; }
-      .hero-subtitle { font-size: 0.72rem; letter-spacing: 0.12em; }
-      .artifacts-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
-      .filter-btn { font-size: 0.68rem; padding: 6px 12px; }
-    }
+  .home-page {
+    padding: 100px 14px 60px;
+  }
+
+  .hero-title {
+    font-size: 1.4rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+  }
+
+  .artifacts-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .filter-btn {
+    font-size: 0.62rem;
+    padding: 5px 10px;
+  }
+
+  .filter-row {
+    gap: 6px;
+    margin-bottom: 28px;
+  }
+
+  .search-wrap {
+    margin-bottom: 18px;
+  }
+}
   `;
 
   return (
