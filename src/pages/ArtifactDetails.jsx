@@ -288,7 +288,44 @@ export default function ArtifactDetails() {
   const activeIndex = hotspots.findIndex(h => h.id === activeHotspot?.id);
 
   return (
+
     <>
+    {/* طبقة مخفية لتفعيل الـ AR فقط */}
+<div style={{ position: "absolute", top: 10, left: 10, width: "1px", height: "1px", overflow: "hidden", opacity: 0 }}>
+  <model-viewer
+    id="ar-trigger"
+    src={artifact.modelPath}
+    ar
+    ar-modes="scene-viewer webxr quick-look"
+    ar-placement="floor"
+    camera-controls
+  >
+    <button slot="ar-button" id="real-ar-button"></button>
+  </model-viewer>
+</div>
+
+<button 
+  onClick={() => document.getElementById('real-ar-button').click()}
+  style={{
+    position: "absolute",
+    top: "14%", 
+    transform: "translateX(-25%)", 
+    right: "36px",
+    zIndex: 100,
+    backgroundColor: "rgba(212, 175, 90, 0.15)",
+    border: "1px solid var(--gold)",
+    color: "var(--gold)",
+    padding: "10px 20px",
+    borderRadius: "50px",
+    fontFamily: "'Cinzel', serif",
+    fontSize: "0.6rem",
+    letterSpacing: "0.2em",
+    cursor: "pointer",
+    backdropFilter: "blur(10px)"
+  }}
+>
+  ✨ VIEW IN YOUR SPACE ✨
+</button>
       <style>{styles}</style>
       <div className={`cinema-page ${entered ? "entered" : ""}`}>
 
