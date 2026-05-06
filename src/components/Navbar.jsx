@@ -57,22 +57,20 @@ export default function Navbar() {
             className={location.pathname === "/about" ? "nav-item active" : "nav-item"}
             onClick={() => setIsOpen(false)}
           >
-            Egypt Timeline
-          </Link>
-          <Link
-            to="/contact"
-            className={location.pathname === "/contact" ? "nav-item active" : "nav-item"}
-            onClick={() => setIsOpen(false)}
-          >
-              About Museum
+            About Museum
           </Link>
           <Link
             to="/timeline"
             className={location.pathname === "/timeline" ? "nav-item active" : "nav-item"}
             onClick={() => setIsOpen(false)}
           >
-
-
+            Egypt's Timeline
+          </Link>
+          <Link
+            to="/contact"
+            className={location.pathname === "/contact" ? "nav-item active" : "nav-item"}
+            onClick={() => setIsOpen(false)}
+          >
             Contact Us
           </Link>
         </div>
