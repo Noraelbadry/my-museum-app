@@ -3,6 +3,9 @@ import { artifacts } from "../data";
 import { useState, Suspense, useRef, useEffect } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
+if (!customElements.get('model-viewer')) {
+  import('@google/model-viewer');
+}
 import * as THREE from "three";
 
 function DustParticles() {
@@ -304,28 +307,50 @@ export default function ArtifactDetails() {
   </model-viewer>
 </div>
 
+
 <button 
-  onClick={() => document.getElementById('real-ar-button').click()}
+  onClick={() => {
+    
+    const mv = document.getElementById('ar-trigger');
+    if (mv) {
+      // ودوس على زرار الـ AR اللي جواها
+      mv.activateAR(); 
+    }
+  }}
   style={{
+    display: window.matchMedia("(min-width: 1024px)").matches ? "none" : "block",
     position: "absolute",
+    width: "270px",
     top: "14%", 
-    transform: "translateX(-25%)", 
-    right: "36px",
+    left: "50%",
+    transform: "translateX(-50%)", 
     zIndex: 100,
     backgroundColor: "rgba(212, 175, 90, 0.15)",
-    border: "1px solid var(--gold)",
-    color: "var(--gold)",
-    padding: "10px 20px",
+    border: "1px solid #d4af37",
+    color: "#d4af37",
+    padding: "10px 24px",
     borderRadius: "50px",
     fontFamily: "'Cinzel', serif",
-    fontSize: "0.6rem",
-    letterSpacing: "0.2em",
+    fontSize: "0.65rem",
+    letterSpacing: "0.3em",
     cursor: "pointer",
-    backdropFilter: "blur(10px)"
+    backdropFilter: "blur(10px)",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.3)"
   }}
 >
   ✨ VIEW IN YOUR SPACE ✨
 </button>
+
+{/* 2. الماكينة المستخبية (الـ Model Viewer) */}
+<div style={{ display: 'none' }}> 
+    <model-viewer
+      id="ar-trigger" // لازم الاسم ده يكون نفس اللي فوق في الـ onClick
+      src={artifact.modelPath} // مسار الموديل بتاعك
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+    >
+    </model-viewer>
+</div>
       <style>{styles}</style>
       <div className={`cinema-page ${entered ? "entered" : ""}`}>
 
