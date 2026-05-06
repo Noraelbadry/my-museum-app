@@ -3,6 +3,7 @@ import { useState } from "react";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Contact from "./pages/Contact";
+import Timeline from "./pages/Timeline";
 import ArtifactDetails from "./pages/ArtifactDetails";
 import AboutMuseum from "./pages/AboutMuseum";
 import ArtifactNarration from "./pages/ArtifactNarration";
@@ -22,6 +23,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<AboutMuseum />} />
         <Route path="/artifact/:id" element={<ArtifactNarration />} />
+        <Route path="/timeline" element={<Timeline />} />
         <Route path="/artifact/:id/model" element={<ArtifactDetails />} />
       </Routes>
     </>
