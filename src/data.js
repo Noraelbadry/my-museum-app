@@ -10,7 +10,7 @@ export const artifacts = [
     modelScale: 1.9,
         modelPosition: [0, -1.3, 0],
     description: "I am Akhenaten.. A king who changed everything, one God, one truth.. I am not just history, I am change.",
-    timestamps: [],
+    timestamps: [0.00, 0.42, 0.84, 1.26, 1.68, 2.10, 2.52, 2.94, 3.94, 4.39, 4.84, 5.29, 6.72, 6.99, 7.27, 7.55, 7.82, 8.80, 9.22, 10.06],
     hotspots: [
       {
         id: "head",
@@ -49,6 +49,7 @@ export const artifacts = [
     modelPath: "/models/khafrev2.glb",
     modelScale: 1.5,
     modelPosition: [0, -1.5, 0],
+timestamps: [0.00, 0.24, 0.48, 0.73, 0.97, 1.21, 1.45, 1.69, 1.94, 2.18, 3.32, 3.76, 4.20, 4.64, 5.08, 5.52, 5.96, 6.40, 6.84, 7.28, 8.78, 9.11, 9.45, 9.78, 10.12, 10.45, 10.79, 10.99, 11.19],
 hotspots: [
   {
     id: "face",
@@ -119,6 +120,7 @@ hotspots: [
     modelPath: "/models/ramessesnakhtv2.glb",
     modelScale: 1.8,
     modelPosition: [0, -1.0, 0],
+    timestamps: [0.00, 0.34, 0.69, 1.04, 1.39, 1.73, 2.82, 3.19, 3.56, 3.93, 4.30, 4.67, 5.05, 6.06, 6.34, 6.62, 6.90, 7.17, 7.45, 7.73, 8.01, 8.28, 9.06, 9.54, 10.03, 10.51],
     hotspots: [
     {
       id: "papyrus_lap",
@@ -197,6 +199,7 @@ hotspots: [
     modelPath: "/models/godserapisv2.glb",
     modelScale: 1.8,
     modelPosition: [0, -2.7, 0.2],
+    timestamps: [0.00, 0.77, 1.55, 2.32, 3.10, 3.87, 4.64, 5.48, 6.32, 7.15, 7.99, 8.83, 9.67, 10.50, 11.34, 12.18, 13.00],
      hotspots: [
     {
       id: "face",
@@ -239,10 +242,11 @@ cameraTarget: [0.236, -0.082, 0.233],
     material: "Granite",
     image: "/images/Hor_Son_Hor.webp",
      audioPath: "/audios/Horsonofhorfinale.mpeg",
-     description: "I am Hor son of Hor a priest of thoughts from the late Ptolemaic period. You can see it in how.. I'm made there's balance, but also.. something different.",
+     description: "I am Hor son of Hor a priest of Thoth from the late Ptolemaic period. You can see it in how.. I'm made there's balance, but also.. something different.",
     modelPath: "/models/horsonhorv2.glb",
     modelScale: 2.5,
     modelPosition: [0, -2.1, 0],
+    timestamps: [0.00, 0.40, 0.80, 1.20, 1.59, 1.99, 2.39, 2.79, 3.19, 3.59, 3.99, 4.39, 4.78, 5.18, 5.58, 6.18, 6.58, 6.99, 7.39, 7.80, 8.21, 8.61, 9.02, 9.42, 10.05, 10.69, 11.32, 11.95, 12.59],
      hotspots: [
     {
       id: "face",
@@ -289,6 +293,7 @@ cameraTarget: [0.236, -0.082, 0.233],
      description: "I am a Scribe, not a King, not a God, yet i endured. I did not build monuments, I wrote and what is written, remains.",
     modelScale: 3.0,
     modelPosition: [-0.3, -3.5, 0],
+    timestamps: [0.00, 0.41, 0.82, 1.23, 1.64, 2.05, 2.46, 2.87, 3.28, 3.69, 4.10, 4.51, 5.70, 6.12, 6.54, 6.95, 7.37, 7.79, 8.21, 8.63, 9.04, 9.46, 9.88, 10.00, 10.32],
      hotspots: [
     {
       id: "belly",
@@ -340,9 +345,10 @@ cameraTarget: [0.133, -0.280, 0.442],
     image: "/images/Khakaureseneb.webp",
      audioPath: "/audios/Khakauresenebfinale.mpeg",
     modelPath: "/models/Khakauresenebv2.glb",
-    description: "To understand me, just look. I am Khakaureseneb of the middle Kingdom. Not a king but my face is real, and so is my story.",
+    description: "To understand me, just look. I am Kha kau re seneb of the middle Kingdom. Not a king but my face is real, and so is my story.",
     modelScale: 0.9,
     modelPosition: [-0.5, -1.0, 0],
+    timestamps: [0.00, 0.44, 0.89, 1.33, 1.78, 3.10, 3.52, 3.93, 4.35, 4.76, 5.18, 5.59, 6.01, 6.42, 7.74, 8.15, 8.55, 8.96, 9.36, 9.77, 10.18, 10.58, 10.99, 11.40, 11.80, 12.21, 12.62, 12.99],
       hotspots: [
     {
       id: "face",
