@@ -1,11 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { artifacts } from "../data";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { getArtifact } from "../apiService";
 
 export default function ArtifactNarration() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const artifact = artifacts.find((item) => item.id.toString() === id);
+  const [artifact, setArtifact] = useState(null);
 
   const mediaRef = useRef(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -17,10 +17,23 @@ export default function ArtifactNarration() {
     }
   };
 
+  useEffect(() => {
+    const fetchArtifact = async () => {
+      try {
+        const data = await getArtifact(id);
+        setArtifact(data);
+      } catch (error) {
+        console.error("Error fetching artifact:", error);
+      }
+    };
+
+    fetchArtifact();
+  }, [id]);
+
   if (!artifact) {
     return (
-      <div style={{ color: "white", textAlign: "center", padding: "100px" }}>
-        Loading...
+      <div style={{ color: "white", textAlign: "center", padding: "100px", fontFamily: 'Cinzel, serif' }}>
+        Loading Artifact Details...
       </div>
     );
   }
@@ -229,16 +242,12 @@ export default function ArtifactNarration() {
       box-shadow: 0 8px 25px rgba(212,175,90,0.2);
     }
 
-    /* Modal Styling Fixed for Layering and Scrolling */
     .modal-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.85);
       backdrop-filter: blur(12px);
-      z-index: 9999; /* Ensure it stays above Navbar */
+      z-index: 9999;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -360,10 +369,7 @@ export default function ArtifactNarration() {
       .narration-btn, .narration-btn-secondary { width: 100%; justify-content: center; }
       
       .modal-overlay { padding: 10px; align-items: center; }
-      .modal-box { 
-        padding: 30px 20px; 
-        max-height: 90vh; /* Taller on mobile to utilize space */
-      }
+      .modal-box { padding: 30px 20px; max-height: 90vh; }
     }
   `;
 
