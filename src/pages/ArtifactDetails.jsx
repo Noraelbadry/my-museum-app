@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { artifacts } from "../data";
-import { useState, Suspense, useRef, useEffect } from "react";
+import { useState, Suspense, useRef, useEffect, useMemo } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 if (!customElements.get('model-viewer')) {
@@ -11,26 +11,44 @@ import * as THREE from "three";
 function DustParticles() {
   const mesh = useRef();
   const count = 400;
-  const positions = useRef(new Float32Array(count * 3).map(() => (Math.random() - 0.5) * 8));
-  const speeds = useRef(new Float32Array(count).map(() => 0.002 + Math.random() * 0.003));
+
+  const [positions] = useState(() =>
+    new Float32Array(count * 3).map(() => (Math.random() - 0.5) * 8)
+  );
+  const [speeds] = useState(() =>
+    new Float32Array(count).map(() => 0.002 + Math.random() * 0.003)
+  );
 
   useFrame((state) => {
-    const pos = positions.current;
+    if (!mesh.current) return;
+    const pos = mesh.current.geometry.attributes.position.array;
     for (let i = 0; i < count; i++) {
-      pos[i * 3 + 1] += speeds.current[i];
+      pos[i * 3 + 1] += speeds[i];
       pos[i * 3] += Math.sin(state.clock.elapsedTime * 0.3 + i) * 0.0004;
       if (pos[i * 3 + 1] > 4) pos[i * 3 + 1] = -4;
     }
     mesh.current.geometry.attributes.position.needsUpdate = true;
   });
 
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.BufferAttribute(positions.current, 3));
-
   return (
-    <points ref={mesh} geometry={geo}>
-      <pointsMaterial color="#d4a060" size={0.018} transparent opacity={0.35}
-        sizeAttenuation depthWrite={false} blending={THREE.AdditiveBlending} />
+    <points ref={mesh}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={count}
+          array={positions}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        color="#d4a060"
+        size={0.018}
+        transparent
+        opacity={0.35}
+        sizeAttenuation
+        depthWrite={false}
+        blending={2}
+      />
     </points>
   );
 }
@@ -109,7 +127,7 @@ function HotspotDot({ hotspot, isActive, onSelect }) {
       <meshBasicMaterial color="#d4af5a" transparent opacity={0.01} />
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.06, 0.085, 32]} />
-        <meshBasicMaterial color="#d4af5a" transparent opacity={showRing ? 0.95 : 0} side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#d4af5a" transparent opacity={showRing ? 0.95 : 0} side={2} />
       </mesh>
       <mesh>
         <sphereGeometry args={[0.012, 16, 16]} />
@@ -133,7 +151,16 @@ function Model({ path, scale, position, hotspots = [], activeHotspot, onSelect }
 
   return (
     <group position={position}>
-      <primitive object={scene} scale={scale} />
+      <primitive
+        object={scene}
+        scale={scale}
+        onClick={(e) => {
+          e.stopPropagation();
+          const localPoint = e.point.clone();
+          scene.worldToLocal(localPoint);
+          console.log(`[${localPoint.x.toFixed(4)}, ${localPoint.y.toFixed(4)}, ${localPoint.z.toFixed(4)}]`);
+        }}
+      />
       {hotspots.map((h) => (
         <HotspotDot
           key={h.id}
@@ -163,6 +190,7 @@ export default function ArtifactDetails() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [entered, setEntered] = useState(false);
   const controlsRef = useRef();
+  const isMobile = window.matchMedia("(max-width: 1023px)").matches;
 
   useEffect(() => {
     const t = setTimeout(() => setEntered(true), 120);
@@ -240,6 +268,7 @@ export default function ArtifactDetails() {
     .drawer-pip { width: 5px; height: 5px; border-radius: 50%; background: var(--gold-dark); flex-shrink: 0; }
     .drawer-item.active .drawer-pip { background: var(--gold-light); box-shadow: 0 0 8px rgba(240,208,128,0.5); }
     .drawer-item-name { font-family: 'Cinzel', serif; font-size: 0.7rem; color: var(--gold); font-weight: 600; letter-spacing: 0.04em; }
+    .ar-btn-mobile { display: none; }
     .corner { position: absolute; width: 22px; height: 22px; z-index: 3; pointer-events: none; }
     .corner.tl { top: 16px; left: 16px; border-top: 1px solid rgba(212,175,90,0.35); border-left: 1px solid rgba(212,175,90,0.35); }
     .corner.tr { top: 16px; right: 16px; border-top: 1px solid rgba(212,175,90,0.35); border-right: 1px solid rgba(212,175,90,0.35); }
@@ -253,6 +282,7 @@ export default function ArtifactDetails() {
       .cinema-name { font-size: 1.6rem; }
       .cinema-bottom { padding: 0 16px 20px; }
       .hotspot-drawer { padding: 16px 16px 28px; }
+      .ar-btn-mobile { display: flex; }
     }
   `;
 
@@ -274,36 +304,6 @@ export default function ArtifactDetails() {
         </model-viewer>
       </div>
 
-      {/* AR button — mobile only */}
-      <button
-        onClick={() => {
-          const mv = document.getElementById('ar-trigger');
-          if (mv) mv.activateAR();
-        }}
-        style={{
-          display: window.matchMedia("(min-width: 1024px)").matches ? "none" : "block",
-          position: "absolute",
-          width: "270px",
-          top: "14%",
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 100,
-          backgroundColor: "rgba(212, 175, 90, 0.15)",
-          border: "1px solid #d4af37",
-          color: "#d4af37",
-          padding: "10px 24px",
-          borderRadius: "50px",
-          fontFamily: "'Cinzel', serif",
-          fontSize: "0.65rem",
-          letterSpacing: "0.3em",
-          cursor: "pointer",
-          backdropFilter: "blur(10px)",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.3)"
-        }}
-      >
-        ✨ VIEW IN YOUR SPACE ✨
-      </button>
-
       <style>{styles}</style>
       <div className={`cinema-page ${entered ? "entered" : ""}`}>
 
@@ -314,7 +314,7 @@ export default function ArtifactDetails() {
         <Canvas
           shadows
           camera={{ position: [0, 0.3, 3.8], fov: 42 }}
-          gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}
+          gl={{ antialias: true, toneMappingExposure: 1.1 }}
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
         >
           <fog attach="fog" args={["#060504", 6, 18]} />
@@ -420,6 +420,33 @@ export default function ArtifactDetails() {
               </div>
             ))}
           </div>
+
+          {/* AR button جوا الـ drawer على موبايل بس */}
+          <button
+            className="ar-btn-mobile"
+            onClick={() => {
+              const mv = document.getElementById('ar-trigger');
+              if (mv) mv.activateAR();
+            }}
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              marginTop: "16px",
+              backgroundColor: "rgba(212,175,90,0.1)",
+              border: "1px solid rgba(212,175,90,0.3)",
+              color: "#d4af5a",
+              padding: "12px 24px",
+              borderRadius: "50px",
+              fontFamily: "'Cinzel', serif",
+              fontSize: "0.65rem",
+              letterSpacing: "0.3em",
+              cursor: "pointer",
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            ✨ View in Your Space ✨
+          </button>
         </div>
 
       </div>
