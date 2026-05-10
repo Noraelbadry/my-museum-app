@@ -1,6 +1,6 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { artifacts } from "../data";
-import { useState, Suspense, useRef, useEffect, useMemo } from "react";
+import { useState, Suspense, useRef, useEffect } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 if (!customElements.get('model-viewer')) {
@@ -33,22 +33,9 @@ function DustParticles() {
   return (
     <points ref={mesh}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={count}
-          array={positions}
-          itemSize={3}
-        />
+        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial
-        color="#d4a060"
-        size={0.018}
-        transparent
-        opacity={0.35}
-        sizeAttenuation
-        depthWrite={false}
-        blending={2}
-      />
+      <pointsMaterial color="#d4a060" size={0.018} transparent opacity={0.35} sizeAttenuation depthWrite={false} blending={2} />
     </points>
   );
 }
@@ -62,9 +49,7 @@ function CinematicLights() {
   return (
     <>
       <ambientLight intensity={1.2} color="#fff8e8" />
-      <spotLight ref={spotRef} position={[0, 5, 2]} angle={Math.PI / 7} penumbra={0.5}
-        intensity={5} color="#ffe8b0" castShadow
-        shadow-mapSize={[2048, 2048]} shadow-bias={-0.0003} />
+      <spotLight ref={spotRef} position={[0, 5, 2]} angle={Math.PI / 7} penumbra={0.5} intensity={5} color="#ffe8b0" castShadow shadow-mapSize={[2048, 2048]} shadow-bias={-0.0003} />
       <directionalLight position={[3, 3, 3]} intensity={1.5} color="#fff8e8" />
       <directionalLight position={[-3, 2, -4]} intensity={0.8} color="#c8a060" />
       <pointLight position={[2.5, 1.5, 0.5]} intensity={1.5} color="#d4a060" distance={8} />
@@ -73,10 +58,11 @@ function CinematicLights() {
   );
 }
 
-function CameraController({ target, controlsRef }) {
+function CameraController({ target, controlsRef, resetCamera, onResetDone }) {
   const { camera } = useThree();
   const animating = useRef(false);
 
+  // Navigate to hotspot
   useEffect(() => {
     if (!target || !controlsRef.current) return;
     animating.current = true;
@@ -98,6 +84,29 @@ function CameraController({ target, controlsRef }) {
     animate();
     return () => { animating.current = false; };
   }, [target]);
+
+  // Reset camera to original position
+  useEffect(() => {
+    if (!resetCamera || !controlsRef.current) return;
+    animating.current = true;
+    const startPos = camera.position.clone();
+    const startTarget = controlsRef.current.target.clone();
+    const endPos = new THREE.Vector3(0, 0.3, 3.8);
+    const endTarget = new THREE.Vector3(0, 0, 0);
+    let progress = 0;
+    const animate = () => {
+      if (!animating.current) return;
+      progress += 0.025;
+      if (progress >= 1) { progress = 1; animating.current = false; onResetDone && onResetDone(); }
+      const eased = 1 - Math.pow(1 - progress, 3);
+      camera.position.lerpVectors(startPos, endPos, eased);
+      controlsRef.current.target.lerpVectors(startTarget, endTarget, eased);
+      controlsRef.current.update();
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    animate();
+    return () => { animating.current = false; };
+  }, [resetCamera]);
 
   return null;
 }
@@ -162,12 +171,7 @@ function Model({ path, scale, position, hotspots = [], activeHotspot, onSelect }
         }}
       />
       {hotspots.map((h) => (
-        <HotspotDot
-          key={h.id}
-          hotspot={h}
-          isActive={activeHotspot?.id === h.id}
-          onSelect={onSelect}
-        />
+        <HotspotDot key={h.id} hotspot={h} isActive={activeHotspot?.id === h.id} onSelect={onSelect} />
       ))}
     </group>
   );
@@ -184,13 +188,14 @@ function Floor() {
 
 export default function ArtifactDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const artifact = artifacts.find((item) => item.id.toString() === id);
   const [activeHotspot, setActiveHotspot] = useState(null);
   const [cameraTarget, setCameraTarget] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [entered, setEntered] = useState(false);
+  const [resetCamera, setResetCamera] = useState(false);
   const controlsRef = useRef();
-  const isMobile = window.matchMedia("(max-width: 1023px)").matches;
 
   useEffect(() => {
     const t = setTimeout(() => setEntered(true), 120);
@@ -203,11 +208,19 @@ export default function ArtifactDetails() {
 
   const hotspots = artifact.hotspots || [];
 
-  const handleHotspotSelect = (hotspot) => {
-    const isSame = hotspot.id === activeHotspot?.id;
-    setActiveHotspot(isSame ? null : hotspot);
-    setCameraTarget(isSame ? null : hotspot);
-    if (!isSame) setDrawerOpen(false);
+ const handleHotspotSelect = (hotspot) => {
+  const isSame = hotspot.id === activeHotspot?.id;
+  setActiveHotspot(isSame ? null : hotspot);
+  setCameraTarget(isSame ? null : hotspot);
+  if (isSame) setResetCamera(true); // ← رجوع للأصل لما تقفل
+  if (!isSame) setDrawerOpen(false);
+};
+
+  const handleCloseDrawer = () => {
+    setDrawerOpen(false);
+    setActiveHotspot(null);
+    setCameraTarget(null);
+    setResetCamera(true);
   };
 
   const styles = `
@@ -219,9 +232,12 @@ export default function ArtifactDetails() {
     .cinema-page { position: fixed; inset: 0; overflow: hidden; opacity: 0; transition: opacity 1s ease; }
     .cinema-page.entered { opacity: 1; }
     .vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, transparent 35%, rgba(6,5,4,0.7) 100%); pointer-events: none; z-index: 2; }
-    .cinema-top { position: absolute; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: flex-start; justify-content: space-between; padding: 28px 36px; pointer-events: none; }
+   .cinema-top {position: absolute; top: 70px; left: 0; right: 0; z-index: 10; display: flex; align-items: flex-start; justify-content: flex-end; padding: 28px 36px; pointer-events: none; }
     .cinema-kingdom { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); background: rgba(212,175,90,0.08); border: 1px solid rgba(212,175,90,0.2); border-radius: 50px; padding: 5px 14px; pointer-events: all; }
     .cinema-catalog { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.3em; color: var(--muted); }
+   .back-btn { font-family: 'Cinzel', serif; font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); background: rgba(6,5,4,0.6); border: 1px solid rgba(212,175,90,0.2); border-radius: 50px; padding: 5px 12px; cursor: pointer; backdrop-filter: blur(12px); transition: all 0.3s ease; display: flex; align-items: center; gap: 6px; pointer-events: all; white-space: nowrap;}
+    .back-btn:hover { background: rgba(212,175,90,0.1); border-color: rgba(212,175,90,0.5);}
+    .back-btn:hover { background: rgba(212,175,90,0.1); border-color: rgba(212,175,90,0.5); }
     .cinema-title-wrap { position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; pointer-events: none; white-space: nowrap; }
     .cinema-name { font-family: 'Cinzel Decorative', serif; font-size: clamp(2rem, 5vw, 4.5rem); font-weight: 700; color: transparent; background: linear-gradient(160deg, #f5e49c 0%, var(--gold) 45%, #7a5e28 100%); -webkit-background-clip: text; background-clip: text; letter-spacing: 0.06em; display: block; opacity: 0; transform: translateY(16px); transition: opacity 1s ease 0.3s, transform 1s ease 0.3s; }
     .cinema-page.entered .cinema-name { opacity: 1; transform: translateY(0); }
@@ -244,7 +260,7 @@ export default function ArtifactDetails() {
     .hcard-num { font-family: 'Cinzel', serif; font-size: 0.55rem; letter-spacing: 0.3em; color: var(--gold-dark); margin-bottom: 6px; }
     .hcard-title { font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 600; color: var(--gold); letter-spacing: 0.06em; margin-bottom: 10px; line-height: 1.3; }
     .hcard-divider { height: 1px; background: linear-gradient(to right, var(--gold), transparent); margin-bottom: 12px; opacity: 0.3; }
-    .hcard-desc { font-family: 'Lato', sans-serif; font-size: 0.75rem; font-weight: 300; font-style: italic; color: var(--muted); line-height: 1.75; }
+    .hcard-desc { font-family: 'Lato', sans-serif; font-size: 0.95rem; font-weight: 700; font-style: italic; color: var(--muted); line-height: 1.70; }
     .hcard-close { position: absolute; top: 10px; right: 14px; font-family: 'Lato', sans-serif; font-size: 0.7rem; color: var(--gold-dark); cursor: pointer; background: none; border: none; padding: 0; transition: color 0.2s; }
     .hcard-close:hover { color: var(--gold); }
     .cinema-bottom { position: absolute; bottom: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 36px 28px; }
@@ -290,16 +306,8 @@ export default function ArtifactDetails() {
 
   return (
     <>
-      {/* AR model viewer — hidden */}
       <div style={{ position: "absolute", width: "1px", height: "1px", overflow: "hidden", opacity: 0, top: 0, left: 0 }}>
-        <model-viewer
-          id="ar-trigger"
-          src={artifact.modelPath}
-          ar
-          ar-modes="scene-viewer webxr quick-look"
-          ar-placement="floor"
-          camera-controls
-        >
+        <model-viewer id="ar-trigger" src={artifact.modelPath} ar ar-modes="scene-viewer webxr quick-look" ar-placement="floor" camera-controls>
           <button slot="ar-button" id="real-ar-button"></button>
         </model-viewer>
       </div>
@@ -333,7 +341,12 @@ export default function ArtifactDetails() {
             />
           </Suspense>
 
-          <CameraController target={cameraTarget} controlsRef={controlsRef} />
+          <CameraController
+            target={cameraTarget}
+            controlsRef={controlsRef}
+            resetCamera={resetCamera}
+            onResetDone={() => setResetCamera(false)}
+          />
           <IdleDrift active={!!activeHotspot} />
 
           <OrbitControls
@@ -348,10 +361,11 @@ export default function ArtifactDetails() {
           />
         </Canvas>
 
-        <div className="cinema-top">
-          <div className="cinema-kingdom">{artifact.kingdom}</div>
-          <div className="cinema-catalog">CAT. {String(artifact.id).padStart(3, "0")} / 007</div>
-        </div>
+             <div className="cinema-top">
+             <button className="back-btn" onClick={() => navigate(`/artifact/${id}`)}>
+              ← Narration
+               </button>
+                </div>
 
         <div className="cinema-left">
           <div className="info-label">Details</div>
@@ -399,7 +413,15 @@ export default function ArtifactDetails() {
           </div>
           {hotspots.length > 0 && (
             <button className="drawer-toggle"
-              onClick={() => { setDrawerOpen(!drawerOpen); setActiveHotspot(null); setCameraTarget(null); }}>
+              onClick={() => {
+                if (drawerOpen) {
+                  handleCloseDrawer();
+                } else {
+                  setDrawerOpen(true);
+                  setActiveHotspot(null);
+                  setCameraTarget(null);
+                }
+              }}>
               <div className="drawer-toggle-dot" />
               {drawerOpen ? "Close" : "Explore Points"}
             </button>
@@ -407,7 +429,7 @@ export default function ArtifactDetails() {
         </div>
 
         <div className={`hotspot-drawer ${drawerOpen ? "open" : ""}`}>
-          <div className="drawer-handle" onClick={() => setDrawerOpen(false)} />
+          <div className="drawer-handle" onClick={handleCloseDrawer} />
           <div className="drawer-title">Explore Points</div>
           <div className="drawer-grid">
             {hotspots.map((h, i) => (
@@ -421,7 +443,6 @@ export default function ArtifactDetails() {
             ))}
           </div>
 
-          {/* AR button جوا الـ drawer على موبايل بس */}
           <button
             className="ar-btn-mobile"
             onClick={() => {
