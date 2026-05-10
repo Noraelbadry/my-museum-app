@@ -356,7 +356,7 @@ export default function ArtifactNarration() {
       .narration-page { padding: 90px 5% 60px; }
       .narration-title { font-size: 2rem; }
       .narration-body { flex-direction: column; gap: 28px; }
-      .narration-video-wrap { flex: none; width: 100%; margin-top: 0; }
+      .narration-video-wrap { flex: none; width: 58%; margin-top: 0; align-self: center;}
       .narration-text { font-size: 1rem; }
       .narration-actions { flex-direction: column; align-items: flex-start; }
       .narration-btn, .narration-btn-secondary { width: 100%; justify-content: center; }
