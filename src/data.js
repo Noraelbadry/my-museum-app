@@ -58,8 +58,8 @@ export const artifacts = [
     timestamps: [0.00, 0.24, 0.48, 0.73, 0.97, 1.21, 1.45, 1.69, 1.94, 2.18, 3.32, 3.76, 4.20, 4.64, 5.08, 5.52, 5.96, 6.40, 6.84, 7.28, 8.78, 9.11, 9.45, 9.78, 10.12, 10.45, 10.79, 10.99, 11.19],
     info: {
       who: "Khafre is a king of the Old Kingdom and one of the most powerful pharaohs of ancient Egypt.",
-      role: "He ruled Egypt with strong political and religious authority, considered a divine ruler who maintained unity and stability. He is also associated with major constructions at Giza.",
-      statueDescription: "He is shown seated on a throne, wearing the Nemes headdress and a false beard. The god Horus appears behind his head as a falcon, protecting him. The throne includes symbols like Sema-Tawy, lotus, and papyrus.",
+      role: "He ruled Egypt with strong political and religious authority, and he was considered a divine ruler who maintained unity and stability. He is also associated with the construction of the second pyramid at Giza.",
+      statueDescription: "He is shown seated on a throne, wearing the Nemes headdress and a false beard. The throne includes symbols like Sema-Tawy, lotus, and papyrus.",
       evidence: "The presence of Horus and royal symbols, along with the nine bows under his feet, proves his divine power and control over Egypt and its enemies. The statue itself, as a Ka statue, shows belief in his eternal life.",
     },
     hotspots: [
@@ -87,7 +87,7 @@ export const artifacts = [
     info: {
       who: "Ramessesnakht is a High Priest of Amun during the New Kingdom.",
       role: "He was one of the most powerful religious figures, controlling wealth and influence, and playing a major political role in Egypt.",
-      statueDescription: "He is shown seated as a scribe, with a baboon — symbol of Thoth — on his back.",
+      statueDescription: "He is shown seated as a scribe, with a baboon (symbol of Thoth) on the back of his head.",
       evidence: "The baboon represents divine wisdom, and his position as a scribe shows knowledge and authority. His long service and leadership of expeditions reflect a power similar to a king.",
     },
     hotspots: [
