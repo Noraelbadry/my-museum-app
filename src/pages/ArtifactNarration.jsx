@@ -346,8 +346,8 @@ export default function ArtifactNarration() {
 
     .modal-section-text {
       font-family: 'Lato', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 300;
+      font-size: 1.1rem;
+      font-weight: 500;
       color: rgba(245,240,232,0.75);
       line-height: 1.8;
     }
