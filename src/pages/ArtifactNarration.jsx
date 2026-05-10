@@ -1,11 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
-import { getArtifact } from "../apiService";
+import { artifacts } from "../data";
+import { useState, useRef } from "react";
 
 export default function ArtifactNarration() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [artifact, setArtifact] = useState(null);
+  const artifact = artifacts.find((item) => item.id.toString() === id);
 
   const mediaRef = useRef(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -17,23 +17,12 @@ export default function ArtifactNarration() {
     }
   };
 
-  useEffect(() => {
-    const fetchArtifact = async () => {
-      try {
-        const data = await getArtifact(id);
-        setArtifact(data);
-      } catch (error) {
-        console.error("Error fetching artifact:", error);
-      }
-    };
 
-    fetchArtifact();
-  }, [id]);
 
   if (!artifact) {
     return (
-      <div style={{ color: "white", textAlign: "center", padding: "100px", fontFamily: 'Cinzel, serif' }}>
-        Loading Artifact Details...
+      <div style={{ color: "white", textAlign: "center", padding: "100px" }}>
+        Loading...
       </div>
     );
   }
@@ -108,7 +97,7 @@ export default function ArtifactNarration() {
     }
 
     .narration-video-wrap {
-      flex: 0 0 45%;
+      flex: 0 0 25%;
       position: relative;
       margin-top: -140px;
     }
@@ -244,17 +233,24 @@ export default function ArtifactNarration() {
 
     .modal-overlay {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 70px;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background: rgba(0,0,0,0.85);
       backdrop-filter: blur(12px);
       z-index: 9999;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
+      overflow-y: auto;
       animation: fadeIn 0.3s ease;
     }
+   
+   
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
 
     .modal-box {
       background: rgba(10,8,3,0.98);
@@ -263,16 +259,13 @@ export default function ArtifactNarration() {
       padding: 40px;
       max-width: 620px;
       width: 100%;
-      max-height: 85vh; 
-      overflow-y: auto; 
       position: relative;
       box-shadow: 0 25px 70px rgba(0,0,0,0.9), inset 0 1px 0 rgba(212,175,90,0.15);
       animation: slideUp 0.35s cubic-bezier(0.4,0,0.2,1);
     }
+    
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    .modal-box::-webkit-scrollbar { width: 6px; }
-    .modal-box::-webkit-scrollbar-thumb { background: rgba(235, 189, 83, 0.79); border-radius: 10px; }
 
     .modal-box::before {
       content: '';
@@ -367,9 +360,8 @@ export default function ArtifactNarration() {
       .narration-text { font-size: 1rem; }
       .narration-actions { flex-direction: column; align-items: flex-start; }
       .narration-btn, .narration-btn-secondary { width: 100%; justify-content: center; }
-      
-      .modal-overlay { padding: 10px; align-items: center; }
-      .modal-box { padding: 30px 20px; max-height: 90vh; }
+      .modal-overlay { padding: 10px; }
+      .modal-box { padding: 30px 20px; }
     }
   `;
 
