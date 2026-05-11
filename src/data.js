@@ -60,7 +60,7 @@ export const artifacts = [
       who: "Khafre is a king of the Old Kingdom and one of the most powerful pharaohs of ancient Egypt.",
       role: "He ruled Egypt with strong political and religious authority, and he was considered a divine ruler who maintained unity and stability. He is also associated with the construction of the second pyramid at Giza.",
       statueDescription: "He is shown seated on a throne, wearing the Nemes headdress and a false beard. The throne includes symbols like Sema-Tawy, lotus, and papyrus.",
-      evidence: "The presence of Horus and royal symbols, along with the nine bows under his feet, proves his divine power and control over Egypt and its enemies. The statue itself, as a Ka statue, shows belief in his eternal life.",
+      evidence: "The presence of and royal symbols, along with the nine bows under his feet, proves his divine power and control over Egypt and its enemies. The statue itself, as a Ka statue, shows belief in his eternal life.",
     },
     hotspots: [
       { id: "face", position: [-0.0063, 1.4114, -0.0309], title: "Royal Face", description: "The serene expression of Khafre reflects divine calm — pharaohs were depicted as eternally composed, embodying the stability of the Egyptian cosmos.", cameraPosition: [-0.021, 1.103, 1.2], cameraTarget: [-0.021, 1.103, -0.046] },
