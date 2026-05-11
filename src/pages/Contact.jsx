@@ -1,12 +1,32 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import emailjs from "emailjs-com";
+import { sendContactMessage } from "../api";
 
 export default function Contact() {
   const [sending, setSending] = useState(false);
+  const formRef = useRef(null);
 
-  const sendEmail = (e) => {
+  const sendEmail = async (e) => {
     e.preventDefault();
     setSending(true);
+
+    const formData = new FormData(e.target);
+    const name = formData.get("user_name");
+    const email = formData.get("user_email");
+    const message = formData.get("message");
+
+    try {
+      // بعت للـ backend
+      await sendContactMessage({
+        sender_name: name,
+        sender_email: email,
+        message: message,
+      });
+    } catch (err) {
+      console.error("Backend contact failed:", err);
+    }
+
+    // بعت عن طريق EmailJS
     emailjs
       .sendForm("service_hh1i6f9", "template_quyijwd", e.target, "OSIsRWaopIaFrXV16")
       .then(
@@ -193,19 +213,9 @@ export default function Contact() {
     }
 
     @media (max-width: 480px) {
-      .contact-box {
-        padding: 36px 20px;
-        border-radius: 20px;
-      }
-
-      .contact-title {
-        font-size: 1.6rem;
-      }
-
-      .contact-btn {
-        font-size: 0.78rem;
-        letter-spacing: 0.15em;
-      }
+      .contact-box { padding: 36px 20px; border-radius: 20px; }
+      .contact-title { font-size: 1.6rem; }
+      .contact-btn { font-size: 0.78rem; letter-spacing: 0.15em; }
     }
   `;
 
@@ -225,7 +235,7 @@ export default function Contact() {
             <p className="contact-subtitle">Reach out to the keepers of history</p>
           </div>
 
-          <form className="contact-form" onSubmit={sendEmail}>
+          <form className="contact-form" onSubmit={sendEmail} ref={formRef}>
             <div className="input-group">
               <label className="input-label">Full Name</label>
               <input type="text" name="user_name" placeholder="Enter your name" required className="contact-input" />

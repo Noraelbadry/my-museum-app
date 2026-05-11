@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { artifacts } from "../data";
-import { useState, useRef } from "react";
+import { getArtifactInfo } from "../api";
+import { useState, useRef, useEffect } from "react";
 
 export default function ArtifactNarration() {
   const { id } = useParams();
@@ -10,6 +11,7 @@ export default function ArtifactNarration() {
   const mediaRef = useRef(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  const [info, setInfo] = useState(null);
 
   const handleTimeUpdate = () => {
     if (mediaRef.current) {
@@ -17,7 +19,23 @@ export default function ArtifactNarration() {
     }
   };
 
-
+  useEffect(() => {
+    const fetchInfo = async () => {
+      try {
+        const data = await getArtifactInfo(id);
+        setInfo({
+          who: data.who_is_he,
+          role: data.importance_and_role,
+          statueDescription: data.statue_description,
+          evidence: data.evidence_of_importance,
+        });
+      } catch (err) {
+        console.error("Failed to fetch info:", err);
+        setInfo(artifact?.info || null);
+      }
+    };
+    fetchInfo();
+  }, [id]);
 
   if (!artifact) {
     return (
@@ -29,7 +47,6 @@ export default function ArtifactNarration() {
 
   const storyText = artifact.description || "";
   const words = storyText.split(" ");
-  const info = artifact.info || null;
 
   const styles = `
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap');
@@ -247,10 +264,8 @@ export default function ArtifactNarration() {
       overflow-y: auto;
       animation: fadeIn 0.3s ease;
     }
-   
-   
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     .modal-box {
       background: rgba(10,8,3,0.98);
@@ -263,9 +278,8 @@ export default function ArtifactNarration() {
       box-shadow: 0 25px 70px rgba(0,0,0,0.9), inset 0 1px 0 rgba(212,175,90,0.15);
       animation: slideUp 0.35s cubic-bezier(0.4,0,0.2,1);
     }
-    
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     .modal-box::before {
       content: '';

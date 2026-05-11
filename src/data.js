@@ -112,7 +112,7 @@ export const artifacts = [
     modelPath: "/models/godserapisv2.glb",
     modelScale: 1.8,
     modelPosition: [0, -2.7, 0.2],
-    timestamps: [0.00, 0.77, 1.55, 2.32, 3.10, 3.87, 4.64, 5.48, 6.32, 7.15, 7.99, 8.83, 9.67, 10.50, 11.34, 12.18, 13.00],
+   timestamps: [0, 0.5, 1.0, 1.5, 2.0, 2.5, 4.46, 4.9, 5.4, 6.0, 6.5, 7.1, 7.6, 8.1,9.76, 10.2, 10.7],
     info: {
       who: "Serapis is a god created during the Ptolemaic period.",
       role: "He was designed to unite Greek and Egyptian populations under one religion and represents fertility, healing, and the afterlife.",

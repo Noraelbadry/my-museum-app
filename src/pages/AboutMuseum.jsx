@@ -1,31 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getMuseumById } from "../api";
 
 export default function AboutMuseum() {
   const [selectedMuseum, setSelectedMuseum] = useState(null);
+  const [museumData, setMuseumData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!selectedMuseum) return;
+    const fetchMuseum = async () => {
+      setLoading(true);
+      try {
+        const data = await getMuseumById(1);
+        setMuseumData({
+          title: data.name,
+          subtitle: "Gateway to Ancient Civilization",
+          sections: [
+            { heading: "Overview", text: data.overview },
+            { heading: "The Idea", text: data.idea },
+            { heading: "Construction", text: data.construction },
+            { heading: "Today", text: data.today },
+          ],
+        });
+      } catch (err) {
+        console.error("Failed to fetch museum:", err);
+        setMuseumData({
+          title: "Grand Egyptian Museum",
+          subtitle: "Gateway to Ancient Civilization",
+          sections: [
+            { heading: "Overview", text: "The Grand Egyptian Museum (GEM) is one of the largest archaeological museums in the world dedicated to a single civilization. It is located near the Giza Pyramids in Egypt." },
+            { heading: "The Idea", text: "The idea was first proposed in the early 1990s to provide a modern space capable of preserving and displaying Egypt's vast archaeological heritage." },
+            { heading: "Construction", text: "Construction officially began in 2002 after an international architectural competition. The museum was designed to be a global cultural hub showcasing ancient Egyptian civilization." },
+            { heading: "Today", text: "Today, the Grand Egyptian Museum is considered one of the most important cultural projects in the world. It houses over 100,000 artifacts including the complete collection of King Tutankhamun." },
+          ],
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMuseum();
+  }, [selectedMuseum]);
 
   const museums = {
-    gem: {
-      title: "Grand Egyptian Museum",
-      subtitle: "Gateway to Ancient Civilization",
-      sections: [
-        {
-          heading: "Overview",
-          text: "The Grand Egyptian Museum (GEM) is one of the largest archaeological museums in the world dedicated to a single civilization. It is located near the Giza Pyramids in Egypt.",
-        },
-        {
-          heading: "The Idea",
-          text: "The idea was first proposed in the early 1990s to provide a modern space capable of preserving and displaying Egypt's vast archaeological heritage.",
-        },
-        {
-          heading: "Construction",
-          text: "Construction officially began in 2002 after an international architectural competition. The museum was designed to be a global cultural hub showcasing ancient Egyptian civilization.",
-        },
-        {
-          heading: "Today",
-          text: "Today, the Grand Egyptian Museum is considered one of the most important cultural projects in the world. It houses over 100,000 artifacts including the complete collection of King Tutankhamun.",
-        },
-      ],
-    },
+    gem: { title: "Grand Egyptian Museum" },
   };
 
   const styles = `
@@ -49,7 +66,6 @@ export default function AboutMuseum() {
       align-items: flex-start;
     }
 
-    /* MENU */
     .about-menu {
       width: 240px;
       flex-shrink: 0;
@@ -95,7 +111,6 @@ export default function AboutMuseum() {
       font-weight: 400;
     }
 
-    /* CONTENT */
     .about-content {
       flex: 1;
       background: rgba(255, 255, 255, 0.04);
@@ -145,9 +160,7 @@ export default function AboutMuseum() {
       margin-bottom: 32px;
     }
 
-    .section {
-      margin-bottom: 28px;
-    }
+    .section { margin-bottom: 28px; }
 
     .section-heading {
       font-family: 'Cinzel', serif;
@@ -167,19 +180,11 @@ export default function AboutMuseum() {
     }
 
     @media (max-width: 768px) {
-      .about-container {
-        flex-direction: column;
-      }
-      .about-menu {
-        width: 100%;
-      }
-      .about-content {
-        padding: 28px 24px;
-      }
+      .about-container { flex-direction: column; }
+      .about-menu { width: 100%; }
+      .about-content { padding: 28px 24px; }
     }
   `;
-
-  const selected = selectedMuseum ? museums[selectedMuseum] : null;
 
   return (
     <>
@@ -187,7 +192,6 @@ export default function AboutMuseum() {
       <div className="about-page">
         <div className="about-container">
 
-          {/* MENU */}
           <div className="about-menu">
             <h3>Museums</h3>
             {Object.entries(museums).map(([key, m]) => (
@@ -201,25 +205,28 @@ export default function AboutMuseum() {
             ))}
           </div>
 
-          {/* CONTENT */}
           <div className="about-content">
-            {!selected ? (
+            {!selectedMuseum ? (
               <div className="content-placeholder">
                 Select a museum to explore its history
               </div>
-            ) : (
+            ) : loading ? (
+              <div className="content-placeholder">
+                Loading...
+              </div>
+            ) : museumData ? (
               <>
-                <h1 className="museum-title">{selected.title}</h1>
-                <p className="museum-subtitle">{selected.subtitle}</p>
+                <h1 className="museum-title">{museumData.title}</h1>
+                <p className="museum-subtitle">{museumData.subtitle}</p>
                 <div className="divider" />
-                {selected.sections.map((s, i) => (
+                {museumData.sections.map((s, i) => (
                   <div className="section" key={i}>
                     <h3 className="section-heading">{s.heading}</h3>
                     <p className="section-text">{s.text}</p>
                   </div>
                 ))}
               </>
-            )}
+            ) : null}
           </div>
 
         </div>

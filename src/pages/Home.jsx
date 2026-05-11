@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { artifacts } from "../data";
+import { useState, useEffect } from "react";
+import { artifacts as localArtifacts } from "../data";
+import { getArtifacts } from "../api";
 import ArtifactCard from "../components/ArtifactCard";
 import { Link } from "react-router-dom";
 import { FaFilter } from "react-icons/fa";
@@ -8,6 +9,40 @@ export default function Home() {
   const [kingdomFilter, setKingdomFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [hoveredId, setHoveredId] = useState(null);
+  const [artifacts, setArtifacts] = useState(localArtifacts);
+
+  useEffect(() => {
+    const fetchArtifacts = async () => {
+      try {
+        const data = await getArtifacts();
+        // نضيف البيانات الناقصة من localArtifacts زي timestamps وhotspots وvideoPath
+        const merged = data.map((backendArtifact) => {
+          const local = localArtifacts.find(a => a.id === backendArtifact.artifact_id);
+          return {
+            id: backendArtifact.artifact_id,
+            name: backendArtifact.name,
+            kingdom: backendArtifact.period?.trim(),
+            material: backendArtifact.material,
+            image: backendArtifact.image_path,
+            // باقي البيانات من localArtifacts
+            modelPath: local?.modelPath,
+            videoPath: local?.videoPath,
+            timestamps: local?.timestamps,
+            hotspots: local?.hotspots,
+            modelScale: local?.modelScale,
+            modelPosition: local?.modelPosition,
+            description: backendArtifact.description,
+            info: local?.info,
+          };
+        });
+        setArtifacts(merged);
+      } catch (err) {
+        console.error("Failed to fetch artifacts:", err);
+        setArtifacts(localArtifacts);
+      }
+    };
+    fetchArtifacts();
+  }, []);
 
   const kingdoms = ["all", "Old Kingdom", "Middle Kingdom", "New Kingdom", "Greco-Roman Period", "Ptolemaic Period"];
 
@@ -40,7 +75,6 @@ export default function Home() {
       z-index: 100;
     }
 
-    /* HERO */
     .hero { text-align: center; margin-bottom: 40px; width: 100%; }
 
     .hero-eyebrow {
@@ -100,7 +134,6 @@ export default function Home() {
       line-height: 1.9;
     }
 
-    /* SEARCH */
     .search-wrap {
       width: 100%;
       max-width: 500px;
@@ -139,7 +172,6 @@ export default function Home() {
       background: rgba(255,255,255,0.06);
     }
 
-    /* FILTER */
     .filter-row {
       display: flex;
       align-items: center;
@@ -189,7 +221,6 @@ export default function Home() {
       box-shadow: 0 4px 18px rgba(212,175,90,0.3);
     }
 
-    /* GRID */
     .artifacts-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -209,38 +240,14 @@ export default function Home() {
     }
 
     @media (max-width: 600px) {
-  .home-page {
-    padding: 100px 14px 60px;
-  }
-
-  .hero-title {
-    font-size: 1.4rem;
-  }
-
-  .hero-subtitle {
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-  }
-
-  .artifacts-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .filter-btn {
-    font-size: 0.62rem;
-    padding: 5px 10px;
-  }
-
-  .filter-row {
-    gap: 6px;
-    margin-bottom: 28px;
-  }
-
-  .search-wrap {
-    margin-bottom: 18px;
-  }
-}
+      .home-page { padding: 100px 14px 60px; }
+      .hero-title { font-size: 1.4rem; }
+      .hero-subtitle { font-size: 0.72rem; letter-spacing: 0.12em; }
+      .artifacts-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .filter-btn { font-size: 0.62rem; padding: 5px 10px; }
+      .filter-row { gap: 6px; margin-bottom: 28px; }
+      .search-wrap { margin-bottom: 18px; }
+    }
   `;
 
   return (
@@ -294,9 +301,9 @@ export default function Home() {
                 onMouseEnter={() => setHoveredId(artifact.id)}
                 onMouseLeave={() => setHoveredId(null)}
                 style={{
-  opacity: hoveredId && hoveredId !== artifact.id ? 0.3 : 1,
-  transition: "opacity 0.3s ease",
-}}
+                  opacity: hoveredId && hoveredId !== artifact.id ? 0.3 : 1,
+                  transition: "opacity 0.3s ease",
+                }}
               >
                 <ArtifactCard artifact={artifact} />
               </div>

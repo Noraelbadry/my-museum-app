@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { artifacts } from "../data";
+import { getArtifactParts } from "../api";
 import { useState, Suspense, useRef, useEffect } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
@@ -62,7 +63,6 @@ function CameraController({ target, controlsRef, resetCamera, onResetDone }) {
   const { camera } = useThree();
   const animating = useRef(false);
 
-  // Navigate to hotspot
   useEffect(() => {
     if (!target || !controlsRef.current) return;
     animating.current = true;
@@ -85,7 +85,6 @@ function CameraController({ target, controlsRef, resetCamera, onResetDone }) {
     return () => { animating.current = false; };
   }, [target]);
 
-  // Reset camera to original position
   useEffect(() => {
     if (!resetCamera || !controlsRef.current) return;
     animating.current = true;
@@ -160,16 +159,7 @@ function Model({ path, scale, position, hotspots = [], activeHotspot, onSelect }
 
   return (
     <group position={position}>
-      <primitive
-        object={scene}
-        scale={scale}
-        onClick={(e) => {
-          e.stopPropagation();
-          const localPoint = e.point.clone();
-          scene.worldToLocal(localPoint);
-          console.log(`[${localPoint.x.toFixed(4)}, ${localPoint.y.toFixed(4)}, ${localPoint.z.toFixed(4)}]`);
-        }}
-      />
+      <primitive object={scene} scale={scale} />
       {hotspots.map((h) => (
         <HotspotDot key={h.id} hotspot={h} isActive={activeHotspot?.id === h.id} onSelect={onSelect} />
       ))}
@@ -195,6 +185,7 @@ export default function ArtifactDetails() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [entered, setEntered] = useState(false);
   const [resetCamera, setResetCamera] = useState(false);
+  const [hotspots, setHotspots] = useState(artifact?.hotspots || []);
   const controlsRef = useRef();
 
   useEffect(() => {
@@ -202,19 +193,40 @@ export default function ArtifactDetails() {
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    const fetchParts = async () => {
+      try {
+        const parts = await getArtifactParts(id);
+        const localHotspots = artifact?.hotspots || [];
+        const merged = localHotspots.map((h, i) => {
+          const backendPart = parts.find(p =>
+            p.part_name.toLowerCase() === h.title.toLowerCase()
+          ) || parts[i];
+          return {
+            ...h,
+            description: backendPart?.description || h.description,
+          };
+        });
+        setHotspots(merged);
+      } catch (err) {
+        console.error("Failed to fetch parts:", err);
+        setHotspots(artifact?.hotspots || []);
+      }
+    };
+    fetchParts();
+  }, [id]);
+
   if (!artifact) return (
     <div style={{ color: "white", textAlign: "center", padding: "100px" }}>Loading...</div>
   );
 
-  const hotspots = artifact.hotspots || [];
-
- const handleHotspotSelect = (hotspot) => {
-  const isSame = hotspot.id === activeHotspot?.id;
-  setActiveHotspot(isSame ? null : hotspot);
-  setCameraTarget(isSame ? null : hotspot);
-  if (isSame) setResetCamera(true); // ← رجوع للأصل لما تقفل
-  if (!isSame) setDrawerOpen(false);
-};
+  const handleHotspotSelect = (hotspot) => {
+    const isSame = hotspot.id === activeHotspot?.id;
+    setActiveHotspot(isSame ? null : hotspot);
+    setCameraTarget(isSame ? null : hotspot);
+    if (isSame) setResetCamera(true);
+    if (!isSame) setDrawerOpen(false);
+  };
 
   const handleCloseDrawer = () => {
     setDrawerOpen(false);
@@ -232,11 +244,8 @@ export default function ArtifactDetails() {
     .cinema-page { position: fixed; inset: 0; overflow: hidden; opacity: 0; transition: opacity 1s ease; }
     .cinema-page.entered { opacity: 1; }
     .vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, transparent 35%, rgba(6,5,4,0.7) 100%); pointer-events: none; z-index: 2; }
-   .cinema-top {position: absolute; top: 70px; left: 0; right: 0; z-index: 10; display: flex; align-items: flex-start; justify-content: flex-end; padding: 28px 36px; pointer-events: none; }
-    .cinema-kingdom { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); background: rgba(212,175,90,0.08); border: 1px solid rgba(212,175,90,0.2); border-radius: 50px; padding: 5px 14px; pointer-events: all; }
-    .cinema-catalog { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.3em; color: var(--muted); }
-   .back-btn { font-family: 'Cinzel', serif; font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); background: rgba(6,5,4,0.6); border: 1px solid rgba(212,175,90,0.2); border-radius: 50px; padding: 5px 12px; cursor: pointer; backdrop-filter: blur(12px); transition: all 0.3s ease; display: flex; align-items: center; gap: 6px; pointer-events: all; white-space: nowrap;}
-    .back-btn:hover { background: rgba(212,175,90,0.1); border-color: rgba(212,175,90,0.5);}
+    .cinema-top { position: absolute; top: 70px; left: 0; right: 0; z-index: 10; display: flex; align-items: flex-start; justify-content: flex-end; padding: 28px 36px; pointer-events: none; }
+    .back-btn { font-family: 'Cinzel', serif; font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); background: rgba(6,5,4,0.6); border: 1px solid rgba(212,175,90,0.2); border-radius: 50px; padding: 5px 12px; cursor: pointer; backdrop-filter: blur(12px); transition: all 0.3s ease; display: flex; align-items: center; gap: 6px; pointer-events: all; white-space: nowrap; }
     .back-btn:hover { background: rgba(212,175,90,0.1); border-color: rgba(212,175,90,0.5); }
     .cinema-title-wrap { position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; pointer-events: none; white-space: nowrap; }
     .cinema-name { font-family: 'Cinzel Decorative', serif; font-size: clamp(2rem, 5vw, 4.5rem); font-weight: 700; color: transparent; background: linear-gradient(160deg, #f5e49c 0%, var(--gold) 45%, #7a5e28 100%); -webkit-background-clip: text; background-clip: text; letter-spacing: 0.06em; display: block; opacity: 0; transform: translateY(16px); transition: opacity 1s ease 0.3s, transform 1s ease 0.3s; }
@@ -361,11 +370,11 @@ export default function ArtifactDetails() {
           />
         </Canvas>
 
-             <div className="cinema-top">
-             <button className="back-btn" onClick={() => navigate(`/artifact/${id}`)}>
-              ← Narration
-               </button>
-                </div>
+        <div className="cinema-top">
+          <button className="back-btn" onClick={() => navigate(`/artifact/${id}`)}>
+            ← Narration
+          </button>
+        </div>
 
         <div className="cinema-left">
           <div className="info-label">Details</div>
