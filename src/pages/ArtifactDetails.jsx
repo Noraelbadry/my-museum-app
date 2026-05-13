@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { artifacts } from "../data";
-import { getArtifactParts } from "../api";
+import { getArtifactById, getArtifactParts } from "../api";
 import { useState, Suspense, useRef, useEffect } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
@@ -12,14 +12,12 @@ import * as THREE from "three";
 function DustParticles() {
   const mesh = useRef();
   const count = 400;
-
   const [positions] = useState(() =>
     new Float32Array(count * 3).map(() => (Math.random() - 0.5) * 8)
   );
   const [speeds] = useState(() =>
     new Float32Array(count).map(() => 0.002 + Math.random() * 0.003)
   );
-
   useFrame((state) => {
     if (!mesh.current) return;
     const pos = mesh.current.geometry.attributes.position.array;
@@ -30,7 +28,6 @@ function DustParticles() {
     }
     mesh.current.geometry.attributes.position.needsUpdate = true;
   });
-
   return (
     <points ref={mesh}>
       <bufferGeometry>
@@ -62,7 +59,6 @@ function CinematicLights() {
 function CameraController({ target, controlsRef, resetCamera, onResetDone }) {
   const { camera } = useThree();
   const animating = useRef(false);
-
   useEffect(() => {
     if (!target || !controlsRef.current) return;
     animating.current = true;
@@ -84,7 +80,6 @@ function CameraController({ target, controlsRef, resetCamera, onResetDone }) {
     animate();
     return () => { animating.current = false; };
   }, [target]);
-
   useEffect(() => {
     if (!resetCamera || !controlsRef.current) return;
     animating.current = true;
@@ -106,7 +101,6 @@ function CameraController({ target, controlsRef, resetCamera, onResetDone }) {
     animate();
     return () => { animating.current = false; };
   }, [resetCamera]);
-
   return null;
 }
 
@@ -147,7 +141,6 @@ function HotspotDot({ hotspot, isActive, onSelect }) {
 
 function Model({ path, scale, position, hotspots = [], activeHotspot, onSelect }) {
   const { scene } = useGLTF(path);
-
   useEffect(() => {
     scene.traverse((child) => {
       if (child.isMesh) {
@@ -156,7 +149,6 @@ function Model({ path, scale, position, hotspots = [], activeHotspot, onSelect }
       }
     });
   }, [scene]);
-
   return (
     <group position={position}>
       <primitive object={scene} scale={scale} />
@@ -186,12 +178,37 @@ export default function ArtifactDetails() {
   const [entered, setEntered] = useState(false);
   const [resetCamera, setResetCamera] = useState(false);
   const [hotspots, setHotspots] = useState(artifact?.hotspots || []);
+  const [modelPath, setModelPath] = useState(null);
+  const [artifactData, setArtifactData] = useState(null);
   const controlsRef = useRef();
 
   useEffect(() => {
     const t = setTimeout(() => setEntered(true), 120);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    const fetchArtifact = async () => {
+      try {
+        const data = await getArtifactById(id);
+        setModelPath(data.model_path);
+        setArtifactData({
+          name: data.name,
+          kingdom: data.period?.trim(),
+          material: data.material,
+        });
+      } catch (err) {
+        console.error("Failed to fetch artifact:", err);
+        setModelPath(artifact?.modelPath || null);
+        setArtifactData({
+          name: artifact?.name || "",
+          kingdom: artifact?.kingdom || "",
+          material: artifact?.material || "",
+        });
+      }
+    };
+    fetchArtifact();
+  }, [id]);
 
   useEffect(() => {
     const fetchParts = async () => {
@@ -316,7 +333,7 @@ export default function ArtifactDetails() {
   return (
     <>
       <div style={{ position: "absolute", width: "1px", height: "1px", overflow: "hidden", opacity: 0, top: 0, left: 0 }}>
-        <model-viewer id="ar-trigger" src={artifact.modelPath} ar ar-modes="scene-viewer webxr quick-look" ar-placement="floor" camera-controls>
+        <model-viewer id="ar-trigger" src={modelPath || ""} ar ar-modes="scene-viewer webxr quick-look" ar-placement="floor" camera-controls>
           <button slot="ar-button" id="real-ar-button"></button>
         </model-viewer>
       </div>
@@ -339,16 +356,18 @@ export default function ArtifactDetails() {
           <DustParticles />
           <Floor />
 
-          <Suspense fallback={null}>
-            <Model
-              path={artifact.modelPath}
-              scale={artifact.modelScale || 2.0}
-              position={artifact.modelPosition || [0, -1.5, 0]}
-              hotspots={hotspots}
-              activeHotspot={activeHotspot}
-              onSelect={handleHotspotSelect}
-            />
-          </Suspense>
+          {modelPath && (
+            <Suspense fallback={null}>
+              <Model
+                path={modelPath}
+                scale={artifact.modelScale || 2.0}
+                position={artifact.modelPosition || [0, -1.5, 0]}
+                hotspots={hotspots}
+                activeHotspot={activeHotspot}
+                onSelect={handleHotspotSelect}
+              />
+            </Suspense>
+          )}
 
           <CameraController
             target={cameraTarget}
@@ -380,12 +399,12 @@ export default function ArtifactDetails() {
           <div className="info-label">Details</div>
           <div className="info-row">
             <span className="info-key">Material</span>
-            <span className="info-val">{artifact.material}</span>
+            <span className="info-val">{artifactData?.material}</span>
           </div>
           <div className="info-divider" />
           <div className="info-row">
             <span className="info-key">Kingdom</span>
-            <span className="info-val">{artifact.kingdom}</span>
+            <span className="info-val">{artifactData?.kingdom}</span>
           </div>
           <div className="info-row">
             <span className="info-key">Hotspots</span>
@@ -406,8 +425,8 @@ export default function ArtifactDetails() {
         </div>
 
         <div className="cinema-title-wrap">
-          <span className="cinema-name">{artifact.name}</span>
-          <span className="cinema-dynasty">{artifact.kingdom} · {artifact.material}</span>
+          <span className="cinema-name">{artifactData?.name}</span>
+          <span className="cinema-dynasty">{artifactData?.kingdom} · {artifactData?.material}</span>
           <div className="cinema-ornament">
             <div className="orn-line" />
             <div className="orn-diamond" />

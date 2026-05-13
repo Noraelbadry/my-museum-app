@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { artifacts } from "../data";
-import { getArtifactInfo } from "../api";
+import { getArtifactInfo, getArtifactById } from "../api";
 import { useState, useRef, useEffect } from "react";
 
 export default function ArtifactNarration() {
@@ -12,6 +12,8 @@ export default function ArtifactNarration() {
   const [currentTime, setCurrentTime] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [info, setInfo] = useState(null);
+  const [storyText, setStoryText] = useState("");
+  const [artifactData, setArtifactData] = useState(null);
 
   const handleTimeUpdate = () => {
     if (mediaRef.current) {
@@ -20,7 +22,30 @@ export default function ArtifactNarration() {
   };
 
   useEffect(() => {
-    const fetchInfo = async () => {
+    const fetchData = async () => {
+      try {
+        const backendData = await getArtifactById(id);
+        setArtifactData({
+          name: backendData.name,
+          kingdom: backendData.period?.trim(),
+          material: backendData.material,
+          videoPath: backendData.audio_path
+            ?.replace("/audios/", "/videos/")
+            .replace(".mpeg", ".mp4")
+            .replace("finale", ""),
+        });
+        setStoryText(backendData.description || "");
+      } catch (err) {
+        console.error("Failed to fetch artifact:", err);
+        setArtifactData({
+          name: "",
+          kingdom: "",
+          material: "",
+          videoPath: null,
+        });
+        setStoryText("");
+      }
+
       try {
         const data = await getArtifactInfo(id);
         setInfo({
@@ -31,10 +56,10 @@ export default function ArtifactNarration() {
         });
       } catch (err) {
         console.error("Failed to fetch info:", err);
-        setInfo(artifact?.info || null);
+        setInfo(null);
       }
     };
-    fetchInfo();
+    fetchData();
   }, [id]);
 
   if (!artifact) {
@@ -45,7 +70,6 @@ export default function ArtifactNarration() {
     );
   }
 
-  const storyText = artifact.description || "";
   const words = storyText.split(" ");
 
   const styles = `
@@ -386,8 +410,8 @@ export default function ArtifactNarration() {
         <div className="narration-inner">
 
           <div className="narration-header">
-            <p className="narration-meta">{artifact.kingdom} • {artifact.material}</p>
-            <h1 className="narration-title">{artifact.name}</h1>
+            <p className="narration-meta">{artifactData?.kingdom} • {artifactData?.material}</p>
+            <h1 className="narration-title">{artifactData?.name}</h1>
             <div className="narration-ornament">
               <div className="orn-line" />
               <div className="orn-diamond" />
@@ -402,7 +426,7 @@ export default function ArtifactNarration() {
               <div className="narration-frame-bl" />
               <video
                 ref={mediaRef}
-                src={artifact.videoPath || ""}
+                src={artifactData?.videoPath || null}
                 onTimeUpdate={handleTimeUpdate}
                 controls
                 className="narration-video"
@@ -476,7 +500,7 @@ export default function ArtifactNarration() {
             <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
 
             <div className="modal-eyebrow">More Information</div>
-            <h2 className="modal-title">{artifact.name}</h2>
+            <h2 className="modal-title">{artifactData?.name}</h2>
             <div className="modal-ornament">
               <div className="orn-line" />
               <div className="orn-diamond" />

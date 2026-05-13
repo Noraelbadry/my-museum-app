@@ -15,24 +15,26 @@ export default function Home() {
     const fetchArtifacts = async () => {
       try {
         const data = await getArtifacts();
-        // نضيف البيانات الناقصة من localArtifacts زي timestamps وhotspots وvideoPath
         const merged = data.map((backendArtifact) => {
           const local = localArtifacts.find(a => a.id === backendArtifact.artifact_id);
+          // حول audio_path لـ video path
+          const videoPath = backendArtifact.audio_path
+            ?.replace("/audios/", "/videos/")
+            .replace(".mpeg", ".mp4")
+            .replace("finale", "");
           return {
             id: backendArtifact.artifact_id,
             name: backendArtifact.name,
             kingdom: backendArtifact.period?.trim(),
             material: backendArtifact.material,
             image: backendArtifact.image_path,
-            // باقي البيانات من localArtifacts
-            modelPath: local?.modelPath,
-            videoPath: local?.videoPath,
+            modelPath: backendArtifact.model_path,
+            videoPath: videoPath || local?.videoPath,
             timestamps: local?.timestamps,
             hotspots: local?.hotspots,
             modelScale: local?.modelScale,
             modelPosition: local?.modelPosition,
             description: backendArtifact.description,
-            info: local?.info,
           };
         });
         setArtifacts(merged);
@@ -47,7 +49,7 @@ export default function Home() {
   const kingdoms = ["all", "Old Kingdom", "Middle Kingdom", "New Kingdom", "Greco-Roman Period", "Ptolemaic Period"];
 
   const filteredArtifacts = artifacts.filter((artifact) => {
-    const matchesSearch = artifact.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = artifact.name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesKingdom = kingdomFilter === "all" || artifact.kingdom === kingdomFilter;
     return matchesSearch && matchesKingdom;
   });
