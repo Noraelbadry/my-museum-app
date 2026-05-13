@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { getEras } from "../api";
+import { getEras, getKingDesc } from "../api";
 
 const kings_static = [
-  { name: "Narmer", achievements: ["Unified Upper and Lower Egypt for the first time", "Founded the First Dynasty of Egypt", "Created the Narmer Palette — earliest record of Egyptian kingship"] },
-  { name: "Djoser", achievements: ["Built the Step Pyramid at Saqqara — first monumental stone structure", "Elevated the architect Imhotep to divine status", "Established the tradition of pyramid building"] },
+  { name: "Narmer", achievements: ["00", "Founded the First Dynasty of Egypt", "Created the Narmer Palette — earliest record of Egyptian kingship"] },
+  { name: "Djoser", achievements: ["00", "Elevated the architect Imhotep to divine status", "Established the tradition of pyramid building"] },
   { name: "Khufu", achievements: ["Built the Great Pyramid of Giza — one of the Seven Wonders", "Organized the largest construction workforce in ancient history", "Centralized royal power to its peak"] },
   { name: "Khafre", achievements: ["Built the second pyramid at Giza", "Commissioned the Great Sphinx", "Continued the golden age of pyramid construction"] },
   { name: "Intef II", achievements: ["Extended Theban power northward against the Herakleopolitan rulers", "Laid the groundwork for Egypt's eventual reunification", "Reigned for nearly 50 years — one of the longest of the period"] },

@@ -24,16 +24,7 @@ export default function AboutMuseum() {
         });
       } catch (err) {
         console.error("Failed to fetch museum:", err);
-        setMuseumData({
-          title: "Grand Egyptian Museum",
-          subtitle: "Gateway to Ancient Civilization",
-          sections: [
-            { heading: "Overview", text: "The Grand Egyptian Museum (GEM) is one of the largest archaeological museums in the world dedicated to a single civilization. It is located near the Giza Pyramids in Egypt." },
-            { heading: "The Idea", text: "The idea was first proposed in the early 1990s to provide a modern space capable of preserving and displaying Egypt's vast archaeological heritage." },
-            { heading: "Construction", text: "Construction officially began in 2002 after an international architectural competition. The museum was designed to be a global cultural hub showcasing ancient Egyptian civilization." },
-            { heading: "Today", text: "Today, the Grand Egyptian Museum is considered one of the most important cultural projects in the world. It houses over 100,000 artifacts including the complete collection of King Tutankhamun." },
-          ],
-        });
+        setMuseumData(null);
       } finally {
         setLoading(false);
       }
@@ -226,7 +217,11 @@ export default function AboutMuseum() {
                   </div>
                 ))}
               </>
-            ) : null}
+            ) : (
+              <div className="content-placeholder">
+                Failed to load museum data.
+              </div>
+            )}
           </div>
 
         </div>

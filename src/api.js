@@ -69,7 +69,11 @@ export async function getEras() {
   return res.json();
 }
 
-
+export async function getKingDesc(kingId) {
+  const res = await fetch(`${BASE_URL}/Era_kings/${kingId}/desc`);
+  if (!res.ok) return [];
+  return res.json();
+}
 
 // POST contact message
 export async function sendContactMessage(data) {
