@@ -1,25 +1,6 @@
 import { useState, useEffect } from "react";
 import { getEras, getKingDesc } from "../api";
 
-const kings_static = [
-  { name: "Narmer", achievements: ["00", "Founded the First Dynasty of Egypt", "Created the Narmer Palette — earliest record of Egyptian kingship"] },
-  { name: "Djoser", achievements: ["00", "Elevated the architect Imhotep to divine status", "Established the tradition of pyramid building"] },
-  { name: "Khufu", achievements: ["Built the Great Pyramid of Giza — one of the Seven Wonders", "Organized the largest construction workforce in ancient history", "Centralized royal power to its peak"] },
-  { name: "Khafre", achievements: ["Built the second pyramid at Giza", "Commissioned the Great Sphinx", "Continued the golden age of pyramid construction"] },
-  { name: "Intef II", achievements: ["Extended Theban power northward against the Herakleopolitan rulers", "Laid the groundwork for Egypt's eventual reunification", "Reigned for nearly 50 years — one of the longest of the period"] },
-  { name: "Mentuhotep II", achievements: ["Reunified Egypt after the First Intermediate Period", "Founded the Middle Kingdom", "Built the mortuary temple at Deir el-Bahari"] },
-  { name: "Senusret III", achievements: ["Expanded Egypt's territory deep into Nubia", "Reorganized the government and weakened the nomarchs", "Known for his realistic portraiture in sculpture"] },
-  { name: "Kamose", achievements: ["Last king of the Seventeenth Dynasty of Thebes", "Launched the war against the Hyksos occupiers of northern Egypt", "Paved the way for Ahmose I to expel the Hyksos and reunify Egypt"] },
-  { name: "Ahmose I", achievements: ["Expelled the Hyksos and reunified Egypt", "Founded the New Kingdom — Egypt's most powerful era", "Established a professional standing army"] },
-  { name: "Hatshepsut", achievements: ["One of Egypt's most successful female pharaohs", "Expanded trade routes to the land of Punt", "Built the magnificent temple at Deir el-Bahari"] },
-  { name: "Thutmose III", achievements: ["Egypt's greatest military pharaoh — never lost a battle", "Expanded the empire to its largest extent", "Won the Battle of Megiddo — one of history's earliest recorded battles"] },
-  { name: "Akhenaten", achievements: ["Revolutionized Egyptian religion — worshipped only Aten", "Founded the new capital city of Amarna", "Introduced a revolutionary new artistic style"] },
-  { name: "Tutankhamun", achievements: ["Restored the traditional Egyptian religion after Akhenaten", "His intact tomb discovered in 1922 revolutionized Egyptology", "Symbol of ancient Egypt's mystery worldwide"] },
-  { name: "Ramesses II", achievements: ["Reigned for 66 years — one of the longest reigns in history", "Signed the world's first known peace treaty with the Hittites", "Built Abu Simbel and countless monuments across Egypt"] },
-  { name: "Ramesses III", achievements: ["Defended Egypt against the Sea Peoples invasions", "Last great pharaoh of the New Kingdom", "Built the mortuary temple of Medinet Habu"] },
-  { name: "Cleopatra VII", achievements: ["Last active ruler of the Ptolemaic Kingdom", "Spoke nine languages including Egyptian", "Allied with Julius Caesar and Mark Antony to preserve Egypt"] },
-];
-
 const periodColors = {
   "Early Dynastic Period": "#8B6914",
   "Old Kingdom": "#C9922A",
@@ -41,19 +22,19 @@ export default function Timeline() {
     const fetchData = async () => {
       try {
         const data = await getEras();
-        const allKings = data.map((king) => {
-          const localKing = kings_static.find(k =>
-            k.name.toLowerCase() === king.king_name.toLowerCase()
-          );
-          return {
-            id: king.king_id,
-            name: king.king_name,
-            period: king.era_name,
-            dynasty: king.dynasty,
-            reign: king.rule_period,
-            achievements: localKing?.achievements || [],
-          };
-        });
+        const allKings = await Promise.all(
+          data.map(async (king) => {
+            const descs = await getKingDesc(king.king_id);
+            return {
+              id: king.king_id,
+              name: king.king_name,
+              period: king.era_name,
+              dynasty: king.dynasty,
+              reign: king.rule_period,
+              achievements: descs.map(d => d.desc),
+            };
+          })
+        );
         setKings(allKings);
       } catch (err) {
         console.error("Failed to fetch timeline data:", err);
