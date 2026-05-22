@@ -17,7 +17,6 @@ export default function Home() {
         const data = await getArtifacts();
         const merged = data.map((backendArtifact) => {
           const local = localArtifacts.find(a => a.id === backendArtifact.artifact_id);
-          // حول audio_path لـ video path
           const videoPath = backendArtifact.audio_path
             ?.replace("/audios/", "/videos/")
             .replace(".mpeg", ".mp4")

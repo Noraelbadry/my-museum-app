@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 
 export default function IntroScreen({ onComplete }) {
-  const [phase, setPhase] = useState("entering"); // entering → hold → leaving
+  const [phase, setPhase] = useState("entering"); 
   const canvasRef = useRef();
 
   // ── Particles ──────────────────────────────────────────

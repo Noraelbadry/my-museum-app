@@ -151,7 +151,16 @@ function Model({ path, scale, position, hotspots = [], activeHotspot, onSelect }
   }, [scene]);
   return (
     <group position={position}>
-      <primitive object={scene} scale={scale} />
+      <primitive
+        object={scene}
+        scale={scale}
+        onClick={(e) => {
+          e.stopPropagation();
+          const localPoint = e.point.clone();
+          scene.worldToLocal(localPoint);
+          console.log(`[${localPoint.x.toFixed(4)}, ${localPoint.y.toFixed(4)}, ${localPoint.z.toFixed(4)}]`);
+        }}
+      />
       {hotspots.map((h) => (
         <HotspotDot key={h.id} hotspot={h} isActive={activeHotspot?.id === h.id} onSelect={onSelect} />
       ))}
@@ -166,6 +175,29 @@ function Floor() {
       <shadowMaterial opacity={0.5} />
     </mesh>
   );
+}
+
+function CameraLogger({ controlsRef }) {
+  const { camera } = useThree();
+  
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'c' || e.key === 'C') {
+        console.log("--- NEW HOTSPOT CAMERA DATA ---");
+        console.log(`cameraPosition: [${camera.position.x.toFixed(4)}, ${camera.position.y.toFixed(4)}, ${camera.position.z.toFixed(4)}]`);
+        
+        if (controlsRef.current) {
+          const t = controlsRef.current.target;
+          console.log(`cameraTarget: [${t.x.toFixed(4)}, ${t.y.toFixed(4)}, ${t.z.toFixed(4)}]`);
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [camera, controlsRef]);
+  
+  return null;
 }
 
 export default function ArtifactDetails() {
@@ -376,11 +408,13 @@ export default function ArtifactDetails() {
             onResetDone={() => setResetCamera(false)}
           />
           <IdleDrift active={!!activeHotspot} />
+          
+          <CameraLogger controlsRef={controlsRef} />
 
           <OrbitControls
             ref={controlsRef}
             enableZoom={true}
-            enablePan={false}
+            enablePan={true}
             autoRotate={!activeHotspot && !drawerOpen}
             autoRotateSpeed={0.5}
             minDistance={1.5}
