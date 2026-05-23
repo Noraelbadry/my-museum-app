@@ -4,8 +4,11 @@ import { getArtifactById, getArtifactParts } from "../api";
 import { useState, Suspense, useRef, useEffect } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
-import '@google/model-viewer';
 import * as THREE from "three";
+
+if (!customElements.get('model-viewer')) {
+  import('@google/model-viewer');
+}
 
 function DustParticles() {
   const mesh = useRef();
