@@ -5,7 +5,7 @@ import { useState, Suspense, useRef, useEffect } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 if (!customElements.get('model-viewer')) {
-  import'@google/model-viewer';
+  import('@google/model-viewer');
 }
 import * as THREE from "three";
 
