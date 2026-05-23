@@ -179,24 +179,20 @@ function Floor() {
 
 function CameraLogger({ controlsRef }) {
   const { camera } = useThree();
-  
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'c' || e.key === 'C') {
         console.log("--- NEW HOTSPOT CAMERA DATA ---");
         console.log(`cameraPosition: [${camera.position.x.toFixed(4)}, ${camera.position.y.toFixed(4)}, ${camera.position.z.toFixed(4)}]`);
-        
         if (controlsRef.current) {
           const t = controlsRef.current.target;
           console.log(`cameraTarget: [${t.x.toFixed(4)}, ${t.y.toFixed(4)}, ${t.z.toFixed(4)}]`);
         }
       }
     };
-    
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [camera, controlsRef]);
-  
   return null;
 }
 
@@ -269,12 +265,23 @@ export default function ArtifactDetails() {
     <div style={{ color: "white", textAlign: "center", padding: "100px" }}>Loading...</div>
   );
 
+  // على الموبايل — لما يضغط hotspot يفتح الـ drawer مباشرة
+  const isMobile = window.innerWidth <= 768;
+
   const handleHotspotSelect = (hotspot) => {
     const isSame = hotspot.id === activeHotspot?.id;
     setActiveHotspot(isSame ? null : hotspot);
     setCameraTarget(isSame ? null : hotspot);
-    if (isSame) setResetCamera(true);
-    if (!isSame) setDrawerOpen(false);
+    if (isSame) {
+      setResetCamera(true);
+      setDrawerOpen(false);
+    } else {
+      if (isMobile) {
+        setDrawerOpen(true); // على الموبايل افتح الـ drawer مباشرة
+      } else {
+        setDrawerOpen(false);
+      }
+    }
   };
 
   const handleCloseDrawer = () => {
@@ -334,14 +341,15 @@ export default function ArtifactDetails() {
     .drawer-handle { width: 36px; height: 3px; background: rgba(212,175,90,0.3); border-radius: 3px; margin: 0 auto 16px; cursor: pointer; }
     .drawer-title { font-family: 'Cinzel', serif; font-size: 0.55rem; letter-spacing: 0.35em; text-transform: uppercase; color: rgba(212,175,90,0.45); margin-bottom: 14px; }
     .drawer-grid { display: flex; gap: 8px; flex-wrap: wrap; }
-    .drawer-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,90,0.1); border-radius: 8px; padding: 10px 14px; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; gap: 8px; min-width: 130px; }
+    .drawer-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,90,0.1); border-radius: 8px; padding: 10px 14px; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: flex-start; gap: 8px; min-width: 130px; }
     .drawer-item:hover { background: rgba(212,175,90,0.07); border-color: rgba(212,175,90,0.3); }
     .drawer-item.active { background: rgba(212,175,90,0.1); border-color: rgba(212,175,90,0.45); }
     .drawer-item-num { font-family: 'Cinzel', serif; font-size: 0.6rem; color: var(--gold-dark); min-width: 16px; }
     .drawer-item.active .drawer-item-num { color: var(--gold); }
-    .drawer-pip { width: 5px; height: 5px; border-radius: 50%; background: var(--gold-dark); flex-shrink: 0; }
+    .drawer-pip { width: 5px; height: 5px; border-radius: 50%; background: var(--gold-dark); flex-shrink: 0; margin-top: 4px; }
     .drawer-item.active .drawer-pip { background: var(--gold-light); box-shadow: 0 0 8px rgba(240,208,128,0.5); }
     .drawer-item-name { font-family: 'Cinzel', serif; font-size: 0.7rem; color: var(--gold); font-weight: 600; letter-spacing: 0.04em; }
+    .drawer-item-desc { font-family: 'Lato', sans-serif; font-size: 0.75rem; font-weight: 300; font-style: italic; color: rgba(245,240,232,0.6); margin-top: 6px; line-height: 1.6; }
     .ar-btn-mobile { display: none; }
     .corner { position: absolute; width: 22px; height: 22px; z-index: 3; pointer-events: none; }
     .corner.tl { top: 16px; left: 16px; border-top: 1px solid rgba(212,175,90,0.35); border-left: 1px solid rgba(212,175,90,0.35); }
@@ -351,8 +359,7 @@ export default function ArtifactDetails() {
     @keyframes goldPulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(212,175,90,0.4); } 50% { opacity: 0.4; box-shadow: 0 0 0 5px rgba(212,175,90,0); } }
     @media (max-width: 768px) {
       .cinema-left { display: none; }
-      .hotspot-card { right: 16px; left: 16px; max-width: none; width: auto; top: 80px; bottom: auto; transform: none; opacity: 0; pointer-events: none; }
-      .hotspot-card.visible { opacity: 1; transform: none; pointer-events: all; }
+      .hotspot-card { display: none; }
       .cinema-name { font-size: 1.6rem; }
       .cinema-bottom { padding: 0 16px 20px; }
       .hotspot-drawer { padding: 16px 16px 28px; }
@@ -408,7 +415,7 @@ export default function ArtifactDetails() {
             onResetDone={() => setResetCamera(false)}
           />
           <IdleDrift active={!!activeHotspot} />
-          
+
           <CameraLogger controlsRef={controlsRef} />
 
           <OrbitControls
@@ -497,10 +504,18 @@ export default function ArtifactDetails() {
             {hotspots.map((h, i) => (
               <div key={h.id}
                 className={`drawer-item ${activeHotspot?.id === h.id ? "active" : ""}`}
-                onClick={() => { handleHotspotSelect(h); setDrawerOpen(false); }}>
+                onClick={() => {
+                  handleHotspotSelect(h);
+                  if (!isMobile) setDrawerOpen(false);
+                }}>
                 <span className="drawer-item-num">0{i + 1}</span>
                 <div className="drawer-pip" />
-                <span className="drawer-item-name">{h.title}</span>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <span className="drawer-item-name">{h.title}</span>
+                  {activeHotspot?.id === h.id && (
+                    <span className="drawer-item-desc">{h.description}</span>
+                  )}
+                </div>
               </div>
             ))}
           </div>
