@@ -4,9 +4,7 @@ import { getArtifactById, getArtifactParts } from "../api";
 import { useState, Suspense, useRef, useEffect } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
-if (!customElements.get('model-viewer')) {
-  import('@google/model-viewer');
-}
+import '@google/model-viewer';
 import * as THREE from "three";
 
 function DustParticles() {
@@ -265,7 +263,6 @@ export default function ArtifactDetails() {
     <div style={{ color: "white", textAlign: "center", padding: "100px" }}>Loading...</div>
   );
 
-  // على الموبايل — لما يضغط hotspot يفتح الـ drawer مباشرة
   const isMobile = window.innerWidth <= 768;
 
   const handleHotspotSelect = (hotspot) => {
@@ -277,7 +274,7 @@ export default function ArtifactDetails() {
       setDrawerOpen(false);
     } else {
       if (isMobile) {
-        setDrawerOpen(true); // على الموبايل افتح الـ drawer مباشرة
+        setDrawerOpen(true);
       } else {
         setDrawerOpen(false);
       }
@@ -371,9 +368,15 @@ export default function ArtifactDetails() {
 
   return (
     <>
-      <div style={{ position: "absolute", width: "1px", height: "1px", overflow: "hidden", opacity: 0, top: 0, left: 0 }}>
-        <model-viewer id="ar-trigger" src={modelPath || ""} ar ar-modes="scene-viewer webxr quick-look" ar-placement="floor" camera-controls>
-          <button slot="ar-button" id="real-ar-button"></button>
+      <div style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none" }}>
+        <model-viewer 
+          id="ar-trigger" 
+          src={modelPath || ""} 
+          ar 
+          ar-modes="scene-viewer webxr quick-look" 
+          camera-controls
+          style={{ width: "100%", height: "100%" }}
+        >
         </model-viewer>
       </div>
 
@@ -522,9 +525,21 @@ export default function ArtifactDetails() {
 
           <button
             className="ar-btn-mobile"
-            onClick={() => {
+            onClick={async () => {
               const mv = document.getElementById('ar-trigger');
-              if (mv) mv.activateAR();
+              if (mv) {
+                if (mv.canActivateAR) {
+                  try {
+                    await mv.activateAR();
+                  } catch (err) {
+                    alert("حصلت مشكلة في فتح الـ AR: " + err.message);
+                  }
+                } else {
+                  alert("جهازك مش بيدعم الـ AR، أو الموديل لسه بيحمل!");
+                }
+              } else {
+                alert("عنصر الـ AR مش موجود في الصفحة!");
+              }
             }}
             style={{
               alignItems: "center",
