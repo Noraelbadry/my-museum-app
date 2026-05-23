@@ -400,7 +400,7 @@ export default function ArtifactDetails() {
               <Model
                 path={modelPath}
                 scale={artifact.modelScale || 2.0}
-                position={artifact.modelPosition || [0, -1.5, 0]}
+                position={artifact.modelPosition || [1.5, -1.5, 0]} // التعديل حصل هنا
                 hotspots={hotspots}
                 activeHotspot={activeHotspot}
                 onSelect={handleHotspotSelect}
