@@ -20,7 +20,7 @@ export const artifacts = [
       { id: "beard", position: [-0.0014, 1.3073, -0.0090], title: "Royal Beard", cameraPosition: [-0.0393, 1.2223, 0.7715], cameraTarget:[-0.0159, 0.1771, -0.3042] },
       { id: "nemes", position: [-0.0895, 1.3101, -0.1234], title: "Nemes Headdress", cameraPosition: [-0.7411, 0.7522, 1.2612], cameraTarget: [-0.0160, 0.4906, -0.0977] },
       { id: "fist", position: [-0.1155, 0.9344, 0.1828], title: "Clenched Fist", cameraPosition: [0.1429, 0.1161, 1.4886], cameraTarget: [0.0000, 0.0000, 0.0000] },
-      { id: "openhand", position: [0.0878, 0.9080, 0.1841], title: "Open Hand", cameraPosition: [-0.3507, 1.3867, 0.4943], cameraTarget: [0.0000, 0.0000, 0.0000] },
+      { id: "openhand", position: [0.0878, 0.9080, 0.1841], title: "rested Hand", cameraPosition: [-0.3507, 1.3867, 0.4943], cameraTarget: [0.0000, 0.0000, 0.0000] },
       { id: "throne", position: [0.0112, 0.6072, -0.2685], title: "Throne Back", cameraPosition:[-0.0355, -0.6721, -1.7569], cameraTarget: [-0.0155, -0.5251, 0.0431] },
       { id: "kilt", position: [0.1582, 0.8552, -0.0590], title: "Royal Kilt", cameraPosition: [0.234, 0.317, 0.9], cameraTarget: [0.0000, 0.0000, 0.0000] },
     ],

@@ -17,25 +17,22 @@ export default function Timeline() {
   const [kings, setKings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [loadingDescId, setLoadingDescId] = useState(null); // عشان نعمل شكل تحميل جوه الكارت
 
+  // 1. نجيب الملوك بس في البداية (طلب واحد فقط للسيرفر)
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await getEras();
-        const allKings = await Promise.all(
-          data.map(async (king) => {
-            const descs = await getKingDesc(king.king_id);
-            return {
-              id: king.king_id,
-              name: king.king_name,
-              period: king.era_name,
-              dynasty: king.dynasty,
-              reign: king.rule_period,
-              achievements: descs.map(d => d.desc),
-            };
-          })
-        );
-        setKings(allKings);
+        const initialKings = data.map((king) => ({
+          id: king.king_id,
+          name: king.king_name,
+          period: king.era_name,
+          dynasty: king.dynasty,
+          reign: king.rule_period,
+          achievements: null, // لسه مجبناش الإنجازات
+        }));
+        setKings(initialKings);
       } catch (err) {
         console.error("Failed to fetch timeline data:", err);
         setError(true);
@@ -46,9 +43,48 @@ export default function Timeline() {
     fetchData();
   }, []);
 
+  // 2. دالة التعامل مع الضغط على الكارت (نجيب الإنجازات لو مش موجودة)
+  const handleCardClick = async (king) => {
+    const isExpanded = activeId === king.id;
+    
+    if (isExpanded) {
+      setActiveId(null); // لو هو مفتوح، اقفله
+      return;
+    }
+
+    setActiveId(king.id); // افتح الكارت
+
+    // لو الإنجازات لسه مجاتش من السيرفر، هنجيبها دلوقتي
+    if (king.achievements === null) {
+      setLoadingDescId(king.id);
+      try {
+        const descs = await getKingDesc(king.id);
+        const achievementTexts = descs.map(d => d.desc);
+        
+        // نحدث الـ state للملك ده بس
+        setKings(prevKings => 
+          prevKings.map(k => 
+            k.id === king.id ? { ...k, achievements: achievementTexts } : k
+          )
+        );
+      } catch (err) {
+        console.error("Failed to fetch descriptions:", err);
+        // ممكن تحط رسالة خطأ صغيرة هنا
+        setKings(prevKings => 
+          prevKings.map(k => 
+            k.id === king.id ? { ...k, achievements: ["Failed to load achievements."] } : k
+          )
+        );
+      } finally {
+        setLoadingDescId(null);
+      }
+    }
+  };
+
   const periods = ["all", ...new Set(kings.map(k => k.period))];
   const filtered = filter === "all" ? kings : kings.filter(k => k.period === filter);
 
+  // احتفظت بكل الـ CSS بتاعك زي ما هو لأنه ممتاز
   const styles = `
     @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@300;400;600&family=Lato:ital,wght@0,300;0,400;1,300&display=swap');
 
@@ -269,7 +305,11 @@ export default function Timeline() {
     .king-card.expanded .achievements-list {
       max-height: 300px;
       opacity: 1;
+      overflow-y: auto;
     }
+    
+    .king-card.expanded .achievements-list::-webkit-scrollbar { width: 4px; }
+    .king-card.expanded .achievements-list::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 4px; }
 
     .achievement-item {
       display: flex;
@@ -326,6 +366,14 @@ export default function Timeline() {
       letter-spacing: 0.2em;
       margin-top: 80px;
       opacity: 0.7;
+    }
+      
+    .mini-loader {
+      font-family: 'Lato', sans-serif;
+      font-size: 0.8rem;
+      color: var(--gold);
+      font-style: italic;
+      padding: 10px 0;
     }
 
     @media (max-width: 768px) {
@@ -387,7 +435,7 @@ export default function Timeline() {
                     key={king.id}
                     className={`king-card ${isExpanded ? "expanded" : ""}`}
                     style={{ "--period-color": color }}
-                    onClick={() => setActiveId(isExpanded ? null : king.id)}
+                    onClick={() => handleCardClick(king)}
                   >
                     <div className="card-top">
                       <span className="card-number">{String(index + 1).padStart(2, "0")}</span>
@@ -403,12 +451,16 @@ export default function Timeline() {
                     <div className="card-divider" />
 
                     <div className="achievements-list">
-                      {king.achievements.map((a, i) => (
-                        <div key={i} className="achievement-item">
-                          <div className="achievement-dot" />
-                          <span className="achievement-text">{a}</span>
-                        </div>
-                      ))}
+                      {loadingDescId === king.id ? (
+                        <div className="mini-loader">Unearthing records...</div>
+                      ) : king.achievements ? (
+                        king.achievements.map((a, i) => (
+                          <div key={i} className="achievement-item">
+                            <div className="achievement-dot" />
+                            <span className="achievement-text">{a}</span>
+                          </div>
+                        ))
+                      ) : null}
                     </div>
 
                     <div className="expand-hint">Click to reveal →</div>
