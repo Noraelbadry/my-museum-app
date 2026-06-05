@@ -6,7 +6,6 @@ import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
-// السطر ده هو اللي بيمنع مشكلة الشاشة السودة (بيعرف العنصر مرة واحدة بس)
 if (typeof window !== "undefined" && !customElements.get('model-viewer')) {
   import('@google/model-viewer');
 }
@@ -536,13 +535,13 @@ export default function ArtifactDetails() {
                   try {
                     await mv.activateAR();
                   } catch (err) {
-                    alert("مشكلة في تشغيل الكاميرا: " + err.message);
+                    alert("Error activating AR: " + err.message);
                   }
                 } else {
-                  alert("نظام الموبايل ده مش بيدعم AR، أو الموديل 3D لسه بيحمل.");
+                  alert("AR feature is not available on this device or browser.");
                 }
               } else {
-                alert("العنصر مش موجود في الصفحة!");
+                alert("AR feature is not available on this device or browser.");
               }
             }}
             style={{
